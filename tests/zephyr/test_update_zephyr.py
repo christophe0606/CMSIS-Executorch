@@ -8,6 +8,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import xml.etree.ElementTree as ET
 from zipfile import ZipFile
 
 
@@ -46,7 +47,10 @@ class UpdateChecks(unittest.TestCase):
             self.pair(name, '// fixture ' + name + '\n')
         for name in ('runtime/core/runtime.cpp', 'kernels/portable/cpu/util/helper.cpp',
                      'kernels/quantized/cpu/embeddingxb.cpp', 'kernels/portable/cpu/op_index_put.cpp',
-                     'kernels/portable/cpu/index_helper.cpp', 'backends/cortex_m/ops/op_softmax.cpp'):
+                     'kernels/portable/cpu/index_helper.cpp', 'backends/cortex_m/ops/op_softmax.cpp',
+                     'extension/tensor/tensor_ptr.cpp', 'extension/tensor/tensor_ptr_maker.cpp',
+                     'backends/arm/runtime/EthosUBackend.cpp', 'backends/arm/runtime/EthosUBackend_Cortex_M.cpp',
+                     'backends/arm/runtime/EthosUBackend_IoMemcpy.cpp', 'backends/arm/runtime/VelaBinStream.cpp'):
             self.pair(name, '// source ' + name + '\n')
         write(self.pack / 'src/runtime/platform/default/minimal.cpp', '// pack PAL\n')
         write(self.upstream / 'runtime/platform/default/zephyr.cpp', '// Zephyr PAL\n')
@@ -59,13 +63,31 @@ class UpdateChecks(unittest.TestCase):
 <releases><release version="9.2.3"/><release version="1.0.0"/></releases>
 <conditions><condition id="NN op"><require condition="CMSIS-NN"/></condition></conditions>
 <components>
-<component Cgroup="ExecuTorch" Csub="Runtime"><files>
+<component Cgroup="ExecuTorch" Csub="Runtime">
+<RTE_Components_h>#define RTE_ML_EXECUTORCH_RUNTIME</RTE_Components_h><files>
   <file category="sourceCpp" name="src/runtime/core/runtime.cpp"/>
   <file category="sourceCpp" name="src/runtime/platform/default/minimal.cpp"/>
-</files></component>
-<component Cgroup="ExecuTorch" Csub="Kernel Utils"><files>
-  <file category="sourceCpp" name="src/kernels/portable/cpu/util/helper.cpp"/>
   <file category="sourceCpp" name="src/kernels/quantized/cpu/embeddingxb.cpp"/>
+</files></component>
+<component Cgroup="ExecuTorch" Csub="Kernel Utils">
+<RTE_Components_h>#define RTE_ML_EXECUTORCH_KERNEL_UTILS</RTE_Components_h><files>
+  <file category="sourceCpp" name="src/kernels/portable/cpu/util/helper.cpp"/>
+</files></component>
+<component Cgroup="ExecuTorch" Csub="Extension Tensor">
+<RTE_Components_h>#define RTE_ML_EXECUTORCH_EXTENSION_TENSOR</RTE_Components_h><files>
+  <file category="sourceCpp" name="src/extension/tensor/tensor_ptr.cpp"/>
+  <file category="sourceCpp" name="src/extension/tensor/tensor_ptr_maker.cpp"/>
+</files></component>
+<component Cgroup="ExecuTorch" Csub="Kernel Registration">
+<RTE_Components_h>#define RTE_ML_EXECUTORCH_KERNEL_REGISTRATION</RTE_Components_h><files>
+  <file category="sourceCpp" name="src/registration/RegisterAllKernels.cpp"/>
+</files></component>
+<component Cgroup="ExecuTorch" Csub="Backend EthosU">
+<RTE_Components_h>#define RTE_ML_EXECUTORCH_BACKEND_ETHOS_U</RTE_Components_h><files>
+  <file category="sourceCpp" name="src/backends/arm/runtime/EthosUBackend.cpp"/>
+  <file category="sourceCpp" name="src/backends/arm/runtime/EthosUBackend_Cortex_M.cpp"/>
+  <file category="sourceCpp" name="src/backends/arm/runtime/EthosUBackend_IoMemcpy.cpp"/>
+  <file category="sourceCpp" name="src/backends/arm/runtime/VelaBinStream.cpp"/>
 </files></component>
 <component Cgroup="ExecuTorch Operators" Csub="Index put">
   <RTE_Components_h>#define RTE_ML_EXECUTORCH_OP_PORTABLE_INDEX_PUT</RTE_Components_h><files>
@@ -125,7 +147,7 @@ Kernel(nullptr, nullptr)
         originals = snapshot(self.pack), snapshot(self.upstream)
         self.assertIn('9.2.3: 2 operator families, 3 registrations', self.run_update())
         artifacts = snapshot(self.output)
-        self.assertEqual(len(artifacts), 7)
+        self.assertEqual(len(artifacts), 8)
         compatibility = artifacts['compatibility.cmake'].decode()
         self.assertIn('EXPECTED_VERSION "9.2.3"', compatibility)
         digest = hashlib.sha256(('// fixture schema/program.fbs\n').encode()).hexdigest()
@@ -141,7 +163,16 @@ Kernel(nullptr, nullptr)
         sources = artifacts['sources.cmake'].decode()
         self.assertIn('runtime/platform/default/zephyr.cpp', sources)
         self.assertNotIn('minimal.cpp', sources)
-        self.assertNotIn('embeddingxb.cpp', sources)
+        self.assertIn('embeddingxb.cpp', sources)
+        self.assertIn('set(CMSIS_EXECUTORCH_BACKEND_ETHOS_U_SOURCES', sources)
+        self.assertIn('backends/arm/runtime/EthosUBackend_IoMemcpy.cpp', sources)
+        self.assertIn('extension/tensor/tensor_ptr_maker.cpp', sources)
+        self.assertIn('${generated_directory}/register_kernels.cpp', sources)
+        kconfig = artifacts['Kconfig.components'].decode()
+        for symbol in ('RUNTIME', 'KERNEL_UTILS', 'EXTENSION_TENSOR', 'KERNEL_REGISTRATION', 'BACKEND_ETHOS_U'):
+            self.assertIn('config CMSIS_EXECUTORCH_' + symbol + '\n', kconfig)
+        self.assertIn('depends on CPU_CORTEX_M && ETHOS_U', kconfig)
+        self.assertIn('select CMSIS_EXECUTORCH_KERNEL_UTILS', artifacts['Kconfig.operators'].decode())
         self.assertTrue(all(b'\r\n' not in data for data in artifacts.values()))
         self.assertEqual((snapshot(self.pack), snapshot(self.upstream)), originals)
 
@@ -175,7 +206,8 @@ Kernel(nullptr, nullptr)
 
     def test_changed_inputs_rejected(self):
         for name in ('schema/program.fbs', 'kernels/portable/functions.yaml',
-                     'runtime/core/runtime.cpp', 'kernels/portable/cpu/op_index_put.cpp'):
+                     'runtime/core/runtime.cpp', 'kernels/portable/cpu/op_index_put.cpp',
+                     'extension/tensor/tensor_ptr.cpp', 'backends/arm/runtime/VelaBinStream.cpp'):
             with self.subTest(name=name):
                 path = self.upstream / name
                 original = path.read_bytes()
@@ -197,6 +229,24 @@ Kernel(nullptr, nullptr)
     def test_new_nn_operator_requires_mapping_review(self):
         write(self.manifest, self.manifest.read_text().replace('op_softmax.cpp', 'op_new.cpp'))
         self.assert_rejected_without_changes('CMSIS-NN function-group mapping')
+
+    def test_unmapped_component_requires_review(self):
+        write(self.manifest, self.manifest.read_text().replace(
+            '</components>', '<component Cgroup="ExecuTorch" Csub="New Extension"/></components>'))
+        self.assert_rejected_without_changes('Add a Zephyr mapping for pack component')
+
+    def test_missing_component_rejected(self):
+        manifest = ET.parse(self.manifest).getroot()
+        components = manifest.find('components')
+        components.remove(components.find('component[@Csub="Extension Tensor"]'))
+        write(self.manifest, ET.tostring(manifest, encoding='unicode'))
+        self.assert_rejected_without_changes('Missing pack components')
+
+    def test_conditional_backend_source_requires_review(self):
+        write(self.manifest, self.manifest.read_text().replace(
+            'name="src/backends/arm/runtime/EthosUBackend.cpp"',
+            'name="src/backends/arm/runtime/EthosUBackend.cpp" condition="New backend"'))
+        self.assert_rejected_without_changes('Conditional source needs review')
 
     def test_registration_layout_change_requires_review(self):
         write(self.registration, self.registration.read_text().replace('#include "RTE_Components.h"', ''))

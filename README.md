@@ -241,9 +241,10 @@ See [the MLOps flow](documentation/mlops-flow.md) for a detailed walkthrough.
 
 This repository also acts as the **cmsis-executorch** Zephyr module through its
 root-level [`zephyr/`](zephyr/module.yml) integration. It compiles ExecuTorch
-runtime and operator sources from Zephyr's installed ExecuTorch module, using
-pre-generated headers supplied here and the existing `src/arm_embedded_module.*`.
-Applications select their operators through Kconfig fragments. See
+runtime, operator, tensor extension and Ethos-U backend sources from Zephyr's
+installed ExecuTorch module, using pre-generated headers supplied here and the
+existing `src/arm_embedded_module.*`.
+Applications select all pack components through Kconfig fragments. See
 [Using CMSIS-Executorch as a Zephyr module](documentation/zephyr-module.md) for
 installation and configuration. It has its own `CONFIG_CMSIS_EXECUTORCH`
 options and is independent of Zephyr's default ExecuTorch build integration.

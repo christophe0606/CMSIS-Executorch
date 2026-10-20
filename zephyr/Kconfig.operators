@@ -8,1032 +8,1204 @@ menu "Portable operators"
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_ADAPTIVE_AVG_POOL2D
 	bool "Portable adaptive_avg_pool2d"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op__adaptive_avg_pool2d.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_CLONE_DIM_ORDER
 	bool "Portable clone_dim_order"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op__clone_dim_order.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_CONJ_PHYSICAL
 	bool "Portable conj_physical"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op__conj_physical.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_DEVICE_COPY
 	bool "Portable device_copy"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op__device_copy.cpp.
 	  Register all 2 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_EMPTY_DIM_ORDER
 	bool "Portable empty_dim_order"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op__empty_dim_order.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_TO_DIM_ORDER_COPY
 	bool "Portable to_dim_order_copy"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op__to_dim_order_copy.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_ABS
 	bool "Portable abs"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_abs.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_ACOS
 	bool "Portable acos"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_acos.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_ACOSH
 	bool "Portable acosh"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_acosh.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_ADD
 	bool "Portable add"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_add.cpp.
 	  Register all 2 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_ADDMM
 	bool "Portable addmm"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_addmm.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_ALIAS_COPY
 	bool "Portable alias_copy"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_alias_copy.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_ALLCLOSE
 	bool "Portable allclose"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_allclose.cpp.
 	  Register all 2 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_AMAX
 	bool "Portable amax"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_amax.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_AMIN
 	bool "Portable amin"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_amin.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_ANY
 	bool "Portable any"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_any.cpp.
 	  Register all 3 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_ARANGE
 	bool "Portable arange"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_arange.cpp.
 	  Register all 2 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_ARGMAX
 	bool "Portable argmax"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_argmax.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_ARGMIN
 	bool "Portable argmin"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_argmin.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_AS_STRIDED_COPY
 	bool "Portable as_strided_copy"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_as_strided_copy.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_ASIN
 	bool "Portable asin"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_asin.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_ASINH
 	bool "Portable asinh"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_asinh.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_ATAN
 	bool "Portable atan"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_atan.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_ATAN2
 	bool "Portable atan2"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_atan2.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_ATANH
 	bool "Portable atanh"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_atanh.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_AVG_POOL2D
 	bool "Portable avg_pool2d"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_avg_pool2d.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_BITWISE_AND
 	bool "Portable bitwise_and"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_bitwise_and.cpp.
 	  Register all 2 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_BITWISE_LEFT_SHIFT
 	bool "Portable bitwise_left_shift"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_bitwise_left_shift.cpp.
 	  Register all 2 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_BITWISE_NOT
 	bool "Portable bitwise_not"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_bitwise_not.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_BITWISE_OR
 	bool "Portable bitwise_or"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_bitwise_or.cpp.
 	  Register all 2 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_BITWISE_RIGHT_SHIFT
 	bool "Portable bitwise_right_shift"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_bitwise_right_shift.cpp.
 	  Register all 2 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_BITWISE_XOR
 	bool "Portable bitwise_xor"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_bitwise_xor.cpp.
 	  Register all 2 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_BMM
 	bool "Portable bmm"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_bmm.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_CAT
 	bool "Portable cat"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_cat.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_CDIST_FORWARD
 	bool "Portable cdist_forward"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_cdist_forward.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_CEIL
 	bool "Portable ceil"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_ceil.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_CLAMP
 	bool "Portable clamp"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_clamp.cpp.
 	  Register all 2 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_CLONE
 	bool "Portable clone"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_clone.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_CONSTANT_PAD_ND
 	bool "Portable constant_pad_nd"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_constant_pad_nd.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_CONVOLUTION
 	bool "Portable convolution"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_convolution.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_CONVOLUTION_BACKWARD
 	bool "Portable convolution_backward"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_convolution_backward.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_COPY
 	bool "Portable copy"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_copy.cpp.
 	  Register all 2 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_COS
 	bool "Portable cos"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_cos.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_COSH
 	bool "Portable cosh"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_cosh.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_CUMSUM
 	bool "Portable cumsum"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_cumsum.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_DETACH_COPY
 	bool "Portable detach_copy"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_detach_copy.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_DIAGONAL_COPY
 	bool "Portable diagonal_copy"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_diagonal_copy.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_DIV
 	bool "Portable div"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_div.cpp.
 	  Register all 4 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_ELU
 	bool "Portable elu"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_elu.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_EMBEDDING
 	bool "Portable embedding"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_embedding.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_EMPTY
 	bool "Portable empty"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_empty.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_EQ
 	bool "Portable eq"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_eq.cpp.
 	  Register all 2 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_ERF
 	bool "Portable erf"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_erf.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_EXP
 	bool "Portable exp"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_exp.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_EXPAND_COPY
 	bool "Portable expand_copy"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_expand_copy.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_EXPM1
 	bool "Portable expm1"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_expm1.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_FILL
 	bool "Portable fill"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_fill.cpp.
 	  Register all 2 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_FLIP
 	bool "Portable flip"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_flip.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_FLOOR
 	bool "Portable floor"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_floor.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_FLOOR_DIVIDE
 	bool "Portable floor_divide"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_floor_divide.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_FMOD
 	bool "Portable fmod"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_fmod.cpp.
 	  Register all 2 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_FULL
 	bool "Portable full"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_full.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_FULL_LIKE
 	bool "Portable full_like"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_full_like.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_GATHER
 	bool "Portable gather"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_gather.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_GE
 	bool "Portable ge"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_ge.cpp.
 	  Register all 2 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_GELU
 	bool "Portable gelu"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_gelu.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_GLU
 	bool "Portable glu"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_glu.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_GRID_SAMPLER_2D
 	bool "Portable grid_sampler_2d"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_grid_sampler_2d.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_GT
 	bool "Portable gt"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_gt.cpp.
 	  Register all 2 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_HARDTANH
 	bool "Portable hardtanh"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_hardtanh.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_INDEX
 	bool "Portable index"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_index.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_INDEX_PUT
 	bool "Portable index_put"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_index_put.cpp.
 	  Register all 2 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_INDEX_SELECT
 	bool "Portable index_select"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_index_select.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_ISINF
 	bool "Portable isinf"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_isinf.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_ISNAN
 	bool "Portable isnan"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_isnan.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_LE
 	bool "Portable le"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_le.cpp.
 	  Register all 2 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_LEAKY_RELU
 	bool "Portable leaky_relu"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_leaky_relu.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_LIFT_FRESH_COPY
 	bool "Portable lift_fresh_copy"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_lift_fresh_copy.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_LOG
 	bool "Portable log"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_log.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_LOG10
 	bool "Portable log10"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_log10.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_LOG1P
 	bool "Portable log1p"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_log1p.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_LOG2
 	bool "Portable log2"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_log2.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_LOG_SOFTMAX
 	bool "Portable log_softmax"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_log_softmax.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_LOGICAL_AND
 	bool "Portable logical_and"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_logical_and.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_LOGICAL_NOT
 	bool "Portable logical_not"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_logical_not.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_LOGICAL_OR
 	bool "Portable logical_or"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_logical_or.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_LOGICAL_XOR
 	bool "Portable logical_xor"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_logical_xor.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_LOGIT
 	bool "Portable logit"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_logit.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_LT
 	bool "Portable lt"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_lt.cpp.
 	  Register all 2 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_MASKED_FILL
 	bool "Portable masked_fill"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_masked_fill.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_MASKED_SCATTER
 	bool "Portable masked_scatter"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_masked_scatter.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_MASKED_SELECT
 	bool "Portable masked_select"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_masked_select.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_MAX
 	bool "Portable max"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_max.cpp.
 	  Register all 2 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_MAX_POOL2D_WITH_INDICES
 	bool "Portable max_pool2d_with_indices"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_max_pool2d_with_indices.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_MAX_POOL2D_WITH_INDICES_BACKWARD
 	bool "Portable max_pool2d_indices_bwd"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_max_pool2d_with_indices_backward.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_MAXIMUM
 	bool "Portable maximum"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_maximum.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_MEAN
 	bool "Portable mean"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_mean.cpp.
 	  Register all 2 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_MIN
 	bool "Portable min"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_min.cpp.
 	  Register all 2 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_MINIMUM
 	bool "Portable minimum"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_minimum.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_MM
 	bool "Portable mm"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_mm.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_MUL
 	bool "Portable mul"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_mul.cpp.
 	  Register all 2 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_NARROW_COPY
 	bool "Portable narrow_copy"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_narrow_copy.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_NATIVE_BATCH_NORM
 	bool "Portable native_batch_norm"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_native_batch_norm.cpp.
 	  Register all 3 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_NATIVE_DROPOUT
 	bool "Portable native_dropout"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_native_dropout.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_NATIVE_GROUP_NORM
 	bool "Portable native_group_norm"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_native_group_norm.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_NATIVE_LAYER_NORM
 	bool "Portable native_layer_norm"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_native_layer_norm.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_NE
 	bool "Portable ne"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_ne.cpp.
 	  Register all 2 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_NEG
 	bool "Portable neg"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_neg.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_NONZERO
 	bool "Portable nonzero"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_nonzero.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_ONES
 	bool "Portable ones"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_ones.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_PDIST_FORWARD
 	bool "Portable pdist_forward"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_pdist_forward.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_PERMUTE_COPY
 	bool "Portable permute_copy"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_permute_copy.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_PIXEL_SHUFFLE
 	bool "Portable pixel_shuffle"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_pixel_shuffle.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_PIXEL_UNSHUFFLE
 	bool "Portable pixel_unshuffle"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_pixel_unshuffle.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_POW
 	bool "Portable pow"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_pow.cpp.
 	  Register all 3 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_PROD
 	bool "Portable prod"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_prod.cpp.
 	  Register all 2 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_RAND
 	bool "Portable rand"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_rand.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_RANDN
 	bool "Portable randn"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_randn.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_RECIPROCAL
 	bool "Portable reciprocal"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_reciprocal.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_REFLECTION_PAD1D
 	bool "Portable reflection_pad1d"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_reflection_pad1d.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_REFLECTION_PAD2D
 	bool "Portable reflection_pad2d"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_reflection_pad2d.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_REFLECTION_PAD3D
 	bool "Portable reflection_pad3d"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_reflection_pad3d.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_RELU
 	bool "Portable relu"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_relu.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_REMAINDER
 	bool "Portable remainder"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_remainder.cpp.
 	  Register all 2 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_REPEAT
 	bool "Portable repeat"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_repeat.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_REPEAT_INTERLEAVE
 	bool "Portable repeat_interleave"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_repeat_interleave.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_REPLICATION_PAD1D
 	bool "Portable replication_pad1d"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_replication_pad1d.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_REPLICATION_PAD2D
 	bool "Portable replication_pad2d"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_replication_pad2d.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_REPLICATION_PAD3D
 	bool "Portable replication_pad3d"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_replication_pad3d.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_ROLL
 	bool "Portable roll"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_roll.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_ROUND
 	bool "Portable round"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_round.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_RSQRT
 	bool "Portable rsqrt"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_rsqrt.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_RSUB
 	bool "Portable rsub"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_rsub.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_SCALAR_TENSOR
 	bool "Portable scalar_tensor"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_scalar_tensor.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_SCATTER
 	bool "Portable scatter"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_scatter.cpp.
 	  Register all 2 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_SCATTER_ADD
 	bool "Portable scatter_add"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_scatter_add.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_SELECT_COPY
 	bool "Portable select_copy"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_select_copy.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_SELECT_SCATTER
 	bool "Portable select_scatter"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_select_scatter.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_SIGMOID
 	bool "Portable sigmoid"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_sigmoid.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_SIGN
 	bool "Portable sign"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_sign.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_SIN
 	bool "Portable sin"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_sin.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_SINH
 	bool "Portable sinh"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_sinh.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_SLICE_COPY
 	bool "Portable slice_copy"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_slice_copy.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_SLICE_SCATTER
 	bool "Portable slice_scatter"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_slice_scatter.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_SOFTMAX
 	bool "Portable softmax"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_softmax.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_SPLIT_COPY
 	bool "Portable split_copy"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_split_copy.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_SPLIT_WITH_SIZES_COPY
 	bool "Portable split_with_sizes_copy"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_split_with_sizes_copy.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_SQRT
 	bool "Portable sqrt"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_sqrt.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_SQUEEZE_COPY
 	bool "Portable squeeze_copy"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_squeeze_copy.cpp.
 	  Register all 2 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_STACK
 	bool "Portable stack"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_stack.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_SUB
 	bool "Portable sub"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_sub.cpp.
 	  Register all 2 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_SUM
 	bool "Portable sum"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_sum.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_T_COPY
 	bool "Portable t_copy"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_t_copy.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_TAN
 	bool "Portable tan"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_tan.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_TANH
 	bool "Portable tanh"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_tanh.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_TO_COPY
 	bool "Portable to_copy"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_to_copy.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_TOPK
 	bool "Portable topk"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_topk.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_TRANSPOSE_COPY
 	bool "Portable transpose_copy"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_transpose_copy.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_TRIL
 	bool "Portable tril"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_tril.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_TRUNC
 	bool "Portable trunc"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_trunc.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_UNBIND_COPY
 	bool "Portable unbind_copy"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_unbind_copy.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_UNFOLD_COPY
 	bool "Portable unfold_copy"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_unfold_copy.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_UNSQUEEZE_COPY
 	bool "Portable unsqueeze_copy"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_unsqueeze_copy.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_UPSAMPLE_BILINEAR2D
 	bool "Portable upsample_bilinear2d"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_upsample_bilinear2d.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_UPSAMPLE_BILINEAR2D_AA
 	bool "Portable upsample_bilinear2d_aa"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_upsample_bilinear2d_aa.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_UPSAMPLE_NEAREST2D
 	bool "Portable upsample_nearest2d"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_upsample_nearest2d.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_VAR
 	bool "Portable var"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_var.cpp.
 	  Register all 2 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_VAR_MEAN
 	bool "Portable var_mean"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_var_mean.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_VIEW_AS_REAL_COPY
 	bool "Portable view_as_real_copy"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_view_as_real_copy.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_VIEW_COPY
 	bool "Portable view_copy"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_view_copy.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_WHERE
 	bool "Portable where"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_where.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_PORTABLE_ZEROS
 	bool "Portable zeros"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/portable/cpu/op_zeros.cpp.
 	  Register all 1 kernel variant(s) in this component.
@@ -1044,54 +1216,63 @@ menu "Quantized operators"
 
 config CMSIS_EXECUTORCH_OP_QUANTIZED_ADD
 	bool "Quantized add"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/quantized/cpu/op_add.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_QUANTIZED_CHOOSE_QPARAMS
 	bool "Quantized choose_qparams"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/quantized/cpu/op_choose_qparams.cpp.
 	  Register all 2 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_QUANTIZED_DEQUANTIZE
 	bool "Quantized dequantize"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/quantized/cpu/op_dequantize.cpp.
 	  Register all 4 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_QUANTIZED_EMBEDDING
 	bool "Quantized embedding"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/quantized/cpu/op_embedding.cpp.
 	  Register all 2 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_QUANTIZED_EMBEDDING2B
 	bool "Quantized embedding2b"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/quantized/cpu/op_embedding2b.cpp.
 	  Register all 2 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_QUANTIZED_EMBEDDING4B
 	bool "Quantized embedding4b"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/quantized/cpu/op_embedding4b.cpp.
 	  Register all 2 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_QUANTIZED_MIXED_LINEAR
 	bool "Quantized mixed_linear"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/quantized/cpu/op_mixed_linear.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_QUANTIZED_MIXED_MM
 	bool "Quantized mixed_mm"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/quantized/cpu/op_mixed_mm.cpp.
 	  Register all 1 kernel variant(s) in this component.
 
 config CMSIS_EXECUTORCH_OP_QUANTIZED_QUANTIZE
 	bool "Quantized quantize"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	help
 	  Compile kernels/quantized/cpu/op_quantize.cpp.
 	  Register all 4 kernel variant(s) in this component.
@@ -1102,6 +1283,7 @@ menu "Cortex-M operators"
 
 config CMSIS_EXECUTORCH_OP_CORTEX_M_DEQUANTIZE_PER_TENSOR
 	bool "Cortex-M dequantize_per_tensor"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	depends on CPU_CORTEX_M
 	help
 	  Compile backends/cortex_m/ops/op_dequantize_per_tensor.cpp.
@@ -1109,6 +1291,7 @@ config CMSIS_EXECUTORCH_OP_CORTEX_M_DEQUANTIZE_PER_TENSOR
 
 config CMSIS_EXECUTORCH_OP_CORTEX_M_MAXIMUM
 	bool "Cortex-M maximum"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	depends on CPU_CORTEX_M
 	depends on CMSIS_NN
 	select CMSIS_NN_BASICMATH
@@ -1119,6 +1302,7 @@ config CMSIS_EXECUTORCH_OP_CORTEX_M_MAXIMUM
 
 config CMSIS_EXECUTORCH_OP_CORTEX_M_MINIMUM
 	bool "Cortex-M minimum"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	depends on CPU_CORTEX_M
 	depends on CMSIS_NN
 	select CMSIS_NN_BASICMATH
@@ -1129,6 +1313,7 @@ config CMSIS_EXECUTORCH_OP_CORTEX_M_MINIMUM
 
 config CMSIS_EXECUTORCH_OP_CORTEX_M_PAD
 	bool "Cortex-M pad"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	depends on CPU_CORTEX_M
 	depends on CMSIS_NN
 	select CMSIS_NN_NNSUPPORT
@@ -1139,6 +1324,7 @@ config CMSIS_EXECUTORCH_OP_CORTEX_M_PAD
 
 config CMSIS_EXECUTORCH_OP_CORTEX_M_QUANTIZE_PER_TENSOR
 	bool "Cortex-M quantize_per_tensor"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	depends on CPU_CORTEX_M
 	help
 	  Compile backends/cortex_m/ops/op_quantize_per_tensor.cpp.
@@ -1146,6 +1332,7 @@ config CMSIS_EXECUTORCH_OP_CORTEX_M_QUANTIZE_PER_TENSOR
 
 config CMSIS_EXECUTORCH_OP_CORTEX_M_QUANTIZED_ACTIVATION
 	bool "Cortex-M quantized_activation"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	depends on CPU_CORTEX_M
 	depends on CMSIS_NN
 	select CMSIS_NN_NNSUPPORT
@@ -1155,6 +1342,7 @@ config CMSIS_EXECUTORCH_OP_CORTEX_M_QUANTIZED_ACTIVATION
 
 config CMSIS_EXECUTORCH_OP_CORTEX_M_QUANTIZED_ADD
 	bool "Cortex-M quantized_add"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	depends on CPU_CORTEX_M
 	depends on CMSIS_NN
 	select CMSIS_NN_BASICMATH
@@ -1165,6 +1353,7 @@ config CMSIS_EXECUTORCH_OP_CORTEX_M_QUANTIZED_ADD
 
 config CMSIS_EXECUTORCH_OP_CORTEX_M_QUANTIZED_AVG_POOL2D
 	bool "Cortex-M quantized_avg_pool2d"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	depends on CPU_CORTEX_M
 	depends on CMSIS_NN
 	select CMSIS_NN_NNSUPPORT
@@ -1175,6 +1364,7 @@ config CMSIS_EXECUTORCH_OP_CORTEX_M_QUANTIZED_AVG_POOL2D
 
 config CMSIS_EXECUTORCH_OP_CORTEX_M_QUANTIZED_BATCH_MATMUL
 	bool "Cortex-M quantized_batch_matmul"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	depends on CPU_CORTEX_M
 	depends on CMSIS_NN
 	select CMSIS_NN_FULLYCONNECTED
@@ -1185,6 +1375,7 @@ config CMSIS_EXECUTORCH_OP_CORTEX_M_QUANTIZED_BATCH_MATMUL
 
 config CMSIS_EXECUTORCH_OP_CORTEX_M_QUANTIZED_CONV2D
 	bool "Cortex-M quantized_conv2d"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	depends on CPU_CORTEX_M
 	depends on CMSIS_NN
 	select CMSIS_NN_CONVOLUTION
@@ -1195,6 +1386,7 @@ config CMSIS_EXECUTORCH_OP_CORTEX_M_QUANTIZED_CONV2D
 
 config CMSIS_EXECUTORCH_OP_CORTEX_M_QUANTIZED_DEPTHWISE_CONV2D
 	bool "Cortex-M quantized_dw_conv2d"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	depends on CPU_CORTEX_M
 	depends on CMSIS_NN
 	select CMSIS_NN_CONVOLUTION
@@ -1205,6 +1397,7 @@ config CMSIS_EXECUTORCH_OP_CORTEX_M_QUANTIZED_DEPTHWISE_CONV2D
 
 config CMSIS_EXECUTORCH_OP_CORTEX_M_QUANTIZED_DIV
 	bool "Cortex-M quantized_div"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	depends on CPU_CORTEX_M
 	depends on CMSIS_NN
 	select CMSIS_NN_NNSUPPORT
@@ -1214,6 +1407,7 @@ config CMSIS_EXECUTORCH_OP_CORTEX_M_QUANTIZED_DIV
 
 config CMSIS_EXECUTORCH_OP_CORTEX_M_QUANTIZED_LINEAR
 	bool "Cortex-M quantized_linear"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	depends on CPU_CORTEX_M
 	depends on CMSIS_NN
 	select CMSIS_NN_FULLYCONNECTED
@@ -1224,6 +1418,7 @@ config CMSIS_EXECUTORCH_OP_CORTEX_M_QUANTIZED_LINEAR
 
 config CMSIS_EXECUTORCH_OP_CORTEX_M_QUANTIZED_MAX_POOL2D
 	bool "Cortex-M quantized_max_pool2d"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	depends on CPU_CORTEX_M
 	depends on CMSIS_NN
 	select CMSIS_NN_NNSUPPORT
@@ -1234,6 +1429,7 @@ config CMSIS_EXECUTORCH_OP_CORTEX_M_QUANTIZED_MAX_POOL2D
 
 config CMSIS_EXECUTORCH_OP_CORTEX_M_QUANTIZED_MUL
 	bool "Cortex-M quantized_mul"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	depends on CPU_CORTEX_M
 	depends on CMSIS_NN
 	select CMSIS_NN_BASICMATH
@@ -1244,6 +1440,7 @@ config CMSIS_EXECUTORCH_OP_CORTEX_M_QUANTIZED_MUL
 
 config CMSIS_EXECUTORCH_OP_CORTEX_M_QUANTIZED_TRANSPOSE_CONV2D
 	bool "Cortex-M quantized_tr_conv2d"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	depends on CPU_CORTEX_M
 	depends on CMSIS_NN
 	select CMSIS_NN_CONVOLUTION
@@ -1254,6 +1451,7 @@ config CMSIS_EXECUTORCH_OP_CORTEX_M_QUANTIZED_TRANSPOSE_CONV2D
 
 config CMSIS_EXECUTORCH_OP_CORTEX_M_SOFTMAX
 	bool "Cortex-M softmax"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	depends on CPU_CORTEX_M
 	depends on CMSIS_NN
 	select CMSIS_NN_NNSUPPORT
@@ -1264,6 +1462,7 @@ config CMSIS_EXECUTORCH_OP_CORTEX_M_SOFTMAX
 
 config CMSIS_EXECUTORCH_OP_CORTEX_M_TRANSPOSE
 	bool "Cortex-M transpose"
+	select CMSIS_EXECUTORCH_KERNEL_UTILS
 	depends on CPU_CORTEX_M
 	depends on CMSIS_NN
 	select CMSIS_NN_NNSUPPORT

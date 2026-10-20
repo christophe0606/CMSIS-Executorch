@@ -16,34 +16,18 @@ menuconfig CMSIS_EXECUTORCH
 
 if CMSIS_EXECUTORCH
 
+rsource "Kconfig.components"
+
 rsource "Kconfig.operators"
 
 config CMSIS_EXECUTORCH_EMBEDDED_MODULE
 	bool "Arm EmbeddedModule facade"
 	default y
+	select CMSIS_EXECUTORCH_RUNTIME
 	help
 	  Include arm::embedded::EmbeddedModule from this project's src directory.
 	  The caller supplies a data loader and memory allocators for its model.
 
-config CMSIS_EXECUTORCH_LOG_ENABLED
-	bool "ExecuTorch diagnostic messages"
-	default y
-	help
-	  Enable runtime diagnostics through ExecuTorch's existing Zephyr PAL.
-
-config CMSIS_EXECUTORCH_PROGRAM_VERIFICATION
-	bool "Verify the program FlatBuffer when loading"
-	default y
-	help
-	  Include the full program verifier. The verification mode requested
-	  when loading the program still determines whether it is run.
-
-config CMSIS_EXECUTORCH_EXTRA_KERNEL_SLOTS
-	int "Additional slots for application-defined kernels"
-	range 0 65535
-	default 0
-	help
-	  The registry is sized automatically for the selected operator families.
-	  Reserve extra slots here when the application registers custom kernels.
+rsource "Kconfig.executorch"
 
 endif # CMSIS_EXECUTORCH

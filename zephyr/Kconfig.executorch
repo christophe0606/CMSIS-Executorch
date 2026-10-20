@@ -1,0 +1,145 @@
+# Copyright 2026 Arm Limited and/or its affiliates.
+# SPDX-License-Identifier: Apache-2.0
+
+# The upstream zephyr/Kconfig gates its options on EXECUTORCH, which also
+# enables its CMake build. Keep local symbols for our direct-source build.
+# Review defaults and macro semantics against the pinned pack when upgrading.
+menu "ExecuTorch runtime settings"
+
+config CMSIS_EXECUTORCH_LOG_ENABLED
+	bool "ExecuTorch diagnostic messages"
+	default y
+	help
+	  Set ET_LOG_ENABLED to 1 or 0 for runtime diagnostic messages through
+	  ExecuTorch's existing Zephyr PAL.
+
+choice CMSIS_EXECUTORCH_LOG_LEVEL
+	prompt "Minimum compiled log severity"
+	depends on CMSIS_EXECUTORCH_LOG_ENABLED
+	default CMSIS_EXECUTORCH_LOG_LEVEL_INFO
+	help
+	  Messages below this severity are excluded at compile time through
+	  ET_MIN_LOG_LEVEL. The values match ExecuTorch's LogLevel enum.
+
+config CMSIS_EXECUTORCH_LOG_LEVEL_DEBUG
+	bool "Debug"
+
+config CMSIS_EXECUTORCH_LOG_LEVEL_INFO
+	bool "Info"
+
+config CMSIS_EXECUTORCH_LOG_LEVEL_ERROR
+	bool "Error"
+
+config CMSIS_EXECUTORCH_LOG_LEVEL_FATAL
+	bool "Fatal"
+
+endchoice
+
+config CMSIS_EXECUTORCH_MIN_LOG_LEVEL
+	string
+	default "Debug" if CMSIS_EXECUTORCH_LOG_LEVEL_DEBUG
+	default "Error" if CMSIS_EXECUTORCH_LOG_LEVEL_ERROR
+	default "Fatal" if CMSIS_EXECUTORCH_LOG_LEVEL_FATAL
+	default "Info"
+
+config CMSIS_EXECUTORCH_PROGRAM_VERIFICATION
+	bool "Verify the program FlatBuffer when loading"
+	default y
+	help
+	  Set ET_ENABLE_PROGRAM_VERIFICATION to 1 or 0. The verification mode
+	  requested when loading the program still determines whether it is run.
+
+config CMSIS_EXECUTORCH_ENUM_STRINGS
+	bool "Include enum names in diagnostics"
+	default y
+	help
+	  Set ET_ENABLE_ENUM_STRINGS to 1 or 0. Disable to omit enum name
+	  strings from runtime headers and reduce code size.
+
+config CMSIS_EXECUTORCH_DEPRECATED_CONSTANT_BUFFER
+	bool "Support the deprecated constant_buffer model format"
+	default y
+	help
+	  Set ET_ENABLE_DEPRECATED_CONSTANT_BUFFER to 1 or 0. The pack sources
+	  enable this compatibility path by default; disable for models that
+	  use the newer constant segment format exclusively.
+
+config CMSIS_EXECUTORCH_MAX_INSTRUCTIONS
+	int "Maximum instructions per method execution"
+	range 1 2147483647
+	default 10000000
+	help
+	  Set ET_MAX_INSTRUCTIONS, the execution limit that prevents malformed
+	  programs from looping indefinitely. The value must be positive.
+
+config CMSIS_EXECUTORCH_EVENT_TRACER
+	bool "Enable event tracer hooks"
+	help
+	  Define ET_EVENT_TRACER_ENABLED to compile the runtime's event tracer
+	  hooks. Supply an executorch::runtime::EventTracer implementation when
+	  loading the method. This does not include ETDump or its code generators.
+	  The macro is left undefined when disabled, as upstream uses #ifdef.
+
+config CMSIS_EXECUTORCH_OP_REGISTRY_DEBUG
+	bool "Enable operator registry debug helpers"
+	help
+	  Define ET_OP_REGISTRY_DEBUG to include the registry's debug stream
+	  operators. The macro is left undefined when disabled.
+
+config CMSIS_EXECUTORCH_PROFILING
+	bool "Enable the built-in profiler"
+	help
+	  Define PROFILING_ENABLED to activate the runtime's performance and
+	  memory profiling macros. The macro is left undefined when disabled.
+	  This profiler uses fixed buffers sized by the following settings and
+	  is independent of the EventTracer interface.
+
+if CMSIS_EXECUTORCH_PROFILING
+
+config CMSIS_EXECUTORCH_MAX_PROFILE_EVENTS
+	int "Performance events per profiling block"
+	range 1 65535
+	default 1024
+	help
+	  Set MAX_PROFILE_EVENTS. Increasing this increases the profiler buffer.
+
+config CMSIS_EXECUTORCH_MAX_MEM_PROFILE_EVENTS
+	int "Memory allocation events per profiling block"
+	range 1 65535
+	default 1024
+	help
+	  Set MAX_MEM_PROFILE_EVENTS. Increasing this increases the profiler buffer.
+
+config CMSIS_EXECUTORCH_MEM_PROFILE_MAX_ALLOCATORS
+	int "Allocators per profiling block"
+	range 1 65535
+	default 32
+	help
+	  Set MEM_PROFILE_MAX_ALLOCATORS.
+
+config CMSIS_EXECUTORCH_MAX_PROFILE_BLOCKS
+	int "Profiling blocks"
+	range 1 65535
+	default 2
+	help
+	  Set MAX_PROFILE_BLOCKS. The profiler allocates one buffer per block.
+
+endif # CMSIS_EXECUTORCH_PROFILING
+
+config CMSIS_EXECUTORCH_ETHOS_U_PER_DELEGATE_PROFILING
+	bool "Ethos-U per-delegate profiling callbacks"
+	depends on CMSIS_EXECUTORCH_BACKEND_ETHOS_U
+	help
+	  Define ET_ARM_ETHOSU_PER_DELEGATE_PROFILING to include the Ethos-U
+	  delegate begin/end callbacks. The application can override the backend's
+	  weak callbacks. The macro is left undefined when disabled.
+
+config CMSIS_EXECUTORCH_EXTRA_KERNEL_SLOTS
+	int "Additional slots for application-defined kernels"
+	range 0 65535
+	default 0
+	help
+	  MAX_KERNEL_NUM is sized automatically for the selected operator
+	  families. Reserve extra slots here for application-defined kernels.
+
+endmenu

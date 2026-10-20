@@ -55,6 +55,15 @@ NN_LAYERS = {
     'transpose': 'TRANSPOSE',
 }
 GUARD = r'RTE_ML_EXECUTORCH_OP_[A-Z0-9_]+'
+# Non-operator components have integration-specific dependencies/adapters.
+# Fail on additions so a release refresh cannot silently omit pack components.
+COMPONENTS = {
+    'Runtime': ('RUNTIME', '\tdefault y\n'),
+    'Kernel Utils': ('KERNEL_UTILS', '\tselect CMSIS_EXECUTORCH_RUNTIME\n'),
+    'Extension Tensor': ('EXTENSION_TENSOR', '\tselect CMSIS_EXECUTORCH_RUNTIME\n'),
+    'Kernel Registration': ('KERNEL_REGISTRATION', '\tdefault y\n\tselect CMSIS_EXECUTORCH_KERNEL_UTILS\n'),
+    'Backend EthosU': ('BACKEND_ETHOS_U', '\tdepends on CPU_CORTEX_M && ETHOS_U\n\tselect CMSIS_EXECUTORCH_RUNTIME\n'),
+}
 
 
 class UpdateError(Exception):
@@ -257,6 +266,60 @@ def render_registration(registration: str, version: str) -> str:
 ''' + body
 
 
+def render_components(manifest: ET.Element, pack: Pack, upstream: Path, banner: str) -> dict[str, str]:
+    components = {}
+    for component in manifest.findall('./components/component'):
+        if component.get('Cgroup') == 'ExecuTorch Operators':
+            continue
+        name = component.get('Csub')
+        if component.get('Cgroup') != 'ExecuTorch' or name not in COMPONENTS:
+            raise UpdateError(f'Add a Zephyr mapping for pack component: {component.attrib}')
+        if name in components:
+            raise UpdateError(f'Duplicate pack component: {name}')
+        components[name] = component
+    if set(components) != set(COMPONENTS):
+        raise UpdateError(f'Missing pack components: {sorted(set(COMPONENTS) - set(components))}')
+
+    kconfig = banner + '# One selection per non-operator pack component.\n'
+    sources = banner + '# Component sources are compiled directly from the upstream module.\n'
+    sources += 'set(CMSIS_EXECUTORCH_COMPONENTS ' + ' '.join(symbol for symbol, _ in COMPONENTS.values()) + ')\n'
+    for name, (symbol, settings) in COMPONENTS.items():
+        component = components[name]
+        guards = re.findall(r'(?m)^\s*#define\s+(RTE_ML_EXECUTORCH_\w+)\b', component.findtext('RTE_Components_h', ''))
+        if guards != ['RTE_ML_EXECUTORCH_' + symbol]:
+            raise UpdateError(f'Unexpected component guard for {name}: {guards}')
+        kconfig += f'\nconfig CMSIS_EXECUTORCH_{symbol}\n\tbool "{name}"\n' + settings + '\thelp\n'
+        description = ' '.join(component.findtext('description', name).split())
+        kconfig += f'\t  {description}\n'
+        sources += f'\nset(CMSIS_EXECUTORCH_{symbol}_SOURCES\n'
+        component_sources = source_paths(component)
+        for source in component_sources:
+            if source == 'registration/RegisterAllKernels.cpp':
+                if symbol != 'KERNEL_REGISTRATION':
+                    raise UpdateError(f'Unexpected registration source in {name}')
+                source_path = '${generated_directory}/register_kernels.cpp'
+            else:
+                if source == 'runtime/platform/default/minimal.cpp':
+                    source = 'runtime/platform/default/zephyr.cpp'
+                    read_text(upstream / source)
+                else:
+                    matching_input(pack, upstream, source)
+                source_path = '${CMSIS_EXECUTORCH_SOURCE_DIR}/' + source
+                kconfig += f'\t  Compile {source}.\n'
+            sources += f'  "{source_path}"\n'
+        sources += ')\n'
+        if symbol == 'RUNTIME':
+            kconfig += '\t  Use the upstream Zephyr PAL in place of the pack minimal PAL.\n'
+        elif symbol == 'KERNEL_REGISTRATION':
+            if component_sources != ('registration/RegisterAllKernels.cpp',):
+                raise UpdateError('Kernel Registration source layout needs review')
+            kconfig += '\t  Use pre-generated Zephyr registration guards for selected operators.\n'
+            kconfig += '\t  Disable when the application supplies its own registration.\n'
+        elif symbol == 'BACKEND_ETHOS_U':
+            kconfig += '\t  Enable the Zephyr Ethos-U driver and configure the NPU for your board.\n'
+    return {'Kconfig.components': kconfig, 'sources.cmake': sources}
+
+
 def prepare(pack: Pack, upstream: Path) -> tuple[dict[str, str], str, list[Operator]]:
     manifest = ET.fromstring(pack.read('PyTorch.ExecuTorch.pdsc'))
     if manifest.findtext('vendor') != 'PyTorch' or manifest.findtext('name') != 'ExecuTorch':
@@ -306,6 +369,7 @@ def prepare(pack: Pack, upstream: Path) -> tuple[dict[str, str], str, list[Opera
             catalog += ''.join(f'  {source}\n' for source in operator.sources).rstrip('\n') + ')\n'
             label = operator.label.replace('\\', '\\\\').replace('"', '\\"').replace('\n', ' ')
             kconfig += f'\nconfig CMSIS_EXECUTORCH_OP_{operator.symbol}\n\tbool "{label}"\n'
+            kconfig += '\tselect CMSIS_EXECUTORCH_KERNEL_UTILS\n'
             if operator.group == 'CORTEX_M':
                 kconfig += '\tdepends on CPU_CORTEX_M\n'
             if operator.nn_layers:
@@ -318,23 +382,7 @@ def prepare(pack: Pack, upstream: Path) -> tuple[dict[str, str], str, list[Opera
     outputs['operators.cmake'] = catalog
     outputs['Kconfig.operators'] = kconfig
 
-    source_lists = banner + '# Runtime and utilities are compiled directly from the upstream module.\n'
-    for component_name, variable in [('Runtime', 'RUNTIME'), ('Kernel Utils', 'KERNEL_UTILS')]:
-        components = manifest.findall(f'./components/component[@Csub="{component_name}"]')
-        if len(components) != 1:
-            raise UpdateError(f'Expected exactly one {component_name} pack component')
-        source_lists += f'\nset(CMSIS_EXECUTORCH_{variable}_SOURCES\n'
-        for source in source_paths(components[0]):
-            if source != 'runtime/platform/default/minimal.cpp':
-                matching_input(pack, upstream, source)
-            if source == 'kernels/quantized/cpu/embeddingxb.cpp':
-                continue
-            if source == 'runtime/platform/default/minimal.cpp':
-                source = 'runtime/platform/default/zephyr.cpp'
-                read_text(upstream / source)
-            source_lists += f'  "${{CMSIS_EXECUTORCH_SOURCE_DIR}}/{source}"\n'
-        source_lists += ')\n'
-    outputs['sources.cmake'] = source_lists
+    outputs.update(render_components(manifest, pack, upstream, banner))
     return outputs, version, operators
 
 

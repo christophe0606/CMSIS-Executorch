@@ -64,6 +64,7 @@ if(NOT executorch_directory_name STREQUAL "executorch")
   message(FATAL_ERROR "The upstream checkout directory must be named executorch for its include paths.")
 endif()
 
+set(generated_directory "${CMAKE_CURRENT_BINARY_DIR}/generated")
 include("${CMAKE_CURRENT_LIST_DIR}/sources.cmake")
 set(CMSIS_EXECUTORCH_OPERATOR_SOURCES "")
 set(CMSIS_EXECUTORCH_SELECTED_OPERATORS "")
@@ -82,13 +83,19 @@ function(cmsis_executorch_operator name kernel_count)
 endfunction()
 include("${CMAKE_CURRENT_LIST_DIR}/operators.cmake")
 
-set(module_sources ${CMSIS_EXECUTORCH_RUNTIME_SOURCES} ${CMSIS_EXECUTORCH_OPERATOR_SOURCES})
-if(CMSIS_EXECUTORCH_OPERATOR_SOURCES)
-  list(APPEND module_sources ${CMSIS_EXECUTORCH_KERNEL_UTILS_SOURCES})
+if(CONFIG_CMSIS_EXECUTORCH_KERNEL_REGISTRATION)
+  file(MAKE_DIRECTORY "${generated_directory}")
+  # Only create the translation unit; declarations/registration are pre-generated.
+  file(CONFIGURE OUTPUT "${generated_directory}/register_kernels.cpp"
+    CONTENT "// Registration is pre-generated; no host code generator is run.\n#include <cmsis_executorch/kernels.h>\n"
+  )
 endif()
-if(CONFIG_CMSIS_EXECUTORCH_OP_QUANTIZED_EMBEDDING2B OR CONFIG_CMSIS_EXECUTORCH_OP_QUANTIZED_EMBEDDING4B)
-  list(APPEND module_sources "${CMSIS_EXECUTORCH_SOURCE_DIR}/kernels/quantized/cpu/embeddingxb.cpp")
-endif()
+set(module_sources ${CMSIS_EXECUTORCH_OPERATOR_SOURCES})
+foreach(component IN LISTS CMSIS_EXECUTORCH_COMPONENTS)
+  if(CONFIG_CMSIS_EXECUTORCH_${component})
+    list(APPEND module_sources ${CMSIS_EXECUTORCH_${component}_SOURCES})
+  endif()
+endforeach()
 if(CONFIG_CMSIS_EXECUTORCH_EMBEDDED_MODULE)
   list(APPEND module_sources "${CMSIS_EXECUTORCH_MODULE_DIR}/src/arm_embedded_module.cpp")
 endif()
@@ -97,13 +104,6 @@ foreach(source IN LISTS module_sources)
     message(FATAL_ERROR "ExecuTorch source is missing: ${source}")
   endif()
 endforeach()
-
-set(generated_directory "${CMAKE_CURRENT_BINARY_DIR}/generated")
-file(MAKE_DIRECTORY "${generated_directory}")
-set(registration_source "${generated_directory}/register_kernels.cpp")
-file(GENERATE OUTPUT "${registration_source}"
-  CONTENT "// Registration is pre-generated; no host code generator is run.\n#include <cmsis_executorch/kernels.h>\n"
-)
 
 # These definitions also apply to application code that includes runtime headers.
 zephyr_include_directories(
@@ -120,12 +120,44 @@ zephyr_compile_definitions(
   FLATBUFFERS_MAX_ALIGNMENT=1024
   FLATBUFFERS_LOCALE_INDEPENDENT=0
   ET_LOG_ENABLED=$<BOOL:${CONFIG_CMSIS_EXECUTORCH_LOG_ENABLED}>
+  ET_MIN_LOG_LEVEL=${CONFIG_CMSIS_EXECUTORCH_MIN_LOG_LEVEL}
   ET_ENABLE_PROGRAM_VERIFICATION=$<BOOL:${CONFIG_CMSIS_EXECUTORCH_PROGRAM_VERIFICATION}>
+  ET_ENABLE_ENUM_STRINGS=$<BOOL:${CONFIG_CMSIS_EXECUTORCH_ENUM_STRINGS}>
+  ET_ENABLE_DEPRECATED_CONSTANT_BUFFER=$<BOOL:${CONFIG_CMSIS_EXECUTORCH_DEPRECATED_CONSTANT_BUFFER}>
+  ET_MAX_INSTRUCTIONS=${CONFIG_CMSIS_EXECUTORCH_MAX_INSTRUCTIONS}
 )
+# These switches use #ifdef/defined in upstream headers: defining them to 0
+# would still enable the feature. Export them only when selected, including
+# to application code so EventTracer and profiling headers agree with runtime.
+if(CONFIG_CMSIS_EXECUTORCH_EVENT_TRACER)
+  zephyr_compile_definitions(ET_EVENT_TRACER_ENABLED)
+endif()
+if(CONFIG_CMSIS_EXECUTORCH_OP_REGISTRY_DEBUG)
+  zephyr_compile_definitions(ET_OP_REGISTRY_DEBUG)
+endif()
+if(CONFIG_CMSIS_EXECUTORCH_PROFILING)
+  zephyr_compile_definitions(
+    PROFILING_ENABLED
+    MAX_PROFILE_EVENTS=${CONFIG_CMSIS_EXECUTORCH_MAX_PROFILE_EVENTS}
+    MAX_MEM_PROFILE_EVENTS=${CONFIG_CMSIS_EXECUTORCH_MAX_MEM_PROFILE_EVENTS}
+    MEM_PROFILE_MAX_ALLOCATORS=${CONFIG_CMSIS_EXECUTORCH_MEM_PROFILE_MAX_ALLOCATORS}
+    MAX_PROFILE_BLOCKS=${CONFIG_CMSIS_EXECUTORCH_MAX_PROFILE_BLOCKS}
+  )
+endif()
+if(CONFIG_CMSIS_EXECUTORCH_ETHOS_U_PER_DELEGATE_PROFILING)
+  zephyr_compile_definitions(ET_ARM_ETHOSU_PER_DELEGATE_PROFILING)
+endif()
+if(CONFIG_CMSIS_EXECUTORCH_BACKEND_ETHOS_U)
+  zephyr_compile_definitions(EXECUTORCH_BUILD_ARM_BAREMETAL=1 ET_USE_ETHOS_U_BACKEND=1)
+endif()
+
+if(NOT module_sources)
+  return()
+endif()
 
 # Zephyr whole-archives its module libraries, retaining the registration constructor.
 zephyr_library_named(cmsis_executorch)
-zephyr_library_sources(${module_sources} "${registration_source}")
+zephyr_library_sources(${module_sources})
 math(EXPR kernel_capacity "${CMSIS_EXECUTORCH_KERNEL_COUNT} + ${CONFIG_CMSIS_EXECUTORCH_EXTRA_KERNEL_SLOTS}")
 if(kernel_capacity LESS 1)
   set(kernel_capacity 1)
