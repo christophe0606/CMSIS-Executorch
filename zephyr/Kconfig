@@ -1,0 +1,49 @@
+# Copyright 2026 Arm Limited and/or its affiliates.
+# SPDX-License-Identifier: Apache-2.0
+
+menuconfig CMSIS_EXECUTORCH
+	bool "CMSIS-ExecuTorch runtime and selected operators"
+	depends on CPP
+	depends on STD_CPP_VERSION >= 201703
+	depends on !EXECUTORCH
+	select REQUIRES_FULL_LIBCPP
+	help
+	  Compile runtime and selected operator sources from the installed
+	  ExecuTorch Zephyr module, using pre-generated headers supplied here.
+	  Keep CONFIG_EXECUTORCH disabled: its upstream build is not used.
+	  No host tools are compiled and no operator code generator is run.
+	  Enable C++ and select C++17 or a newer standard in the application.
+
+if CMSIS_EXECUTORCH
+
+rsource "Kconfig.operators"
+
+config CMSIS_EXECUTORCH_EMBEDDED_MODULE
+	bool "Arm EmbeddedModule facade"
+	default y
+	help
+	  Include arm::embedded::EmbeddedModule from this project's src directory.
+	  The caller supplies a data loader and memory allocators for its model.
+
+config CMSIS_EXECUTORCH_LOG_ENABLED
+	bool "ExecuTorch diagnostic messages"
+	default y
+	help
+	  Enable runtime diagnostics through ExecuTorch's existing Zephyr PAL.
+
+config CMSIS_EXECUTORCH_PROGRAM_VERIFICATION
+	bool "Verify the program FlatBuffer when loading"
+	default y
+	help
+	  Include the full program verifier. The verification mode requested
+	  when loading the program still determines whether it is run.
+
+config CMSIS_EXECUTORCH_EXTRA_KERNEL_SLOTS
+	int "Additional slots for application-defined kernels"
+	range 0 65535
+	default 0
+	help
+	  The registry is sized automatically for the selected operator families.
+	  Reserve extra slots here when the application registers custom kernels.
+
+endif # CMSIS_EXECUTORCH
