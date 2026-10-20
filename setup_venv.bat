@@ -36,5 +36,8 @@ if errorlevel 1 (
     exit /b 2
 )
 REM Isolation lets --recreate remove .venv without removing the running launcher.
+REM Keep the caller's active environment separate from uv run's temporary one.
+set "CMSIS_EXECUTORCH_SETUP_UV_BOOTSTRAP=1"
+set "CMSIS_EXECUTORCH_SETUP_VIRTUAL_ENV=%VIRTUAL_ENV%"
 uv run --no-project --isolated --python "%SETUP_UV_PYTHON%" "%~dp0setup_venv.py" %*
 exit /b %ERRORLEVEL%

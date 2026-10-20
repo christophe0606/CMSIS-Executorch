@@ -6,7 +6,12 @@
 #
 # Runs on Linux, macOS and Windows. The thin wrappers setup_venv.sh and
 # setup_venv.bat just delegate here; everything OS-specific lives in this file.
-"""Create (or repair) the .venv used to export the model."""
+"""Prepare the Python environment used to export models.
+
+Requirements are always read from the directory containing this script.
+Pip uses .venv in the working directory; --uv discovers an existing environment
+using uv's normal search, including parent directories.
+"""
 
 from __future__ import annotations
 
@@ -20,7 +25,6 @@ import venv
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-VENV_DIR = HERE / ".venv"
 
 # ExecuTorch 1.5 declares requires-python = ">=3.10,<3.15" in its pyproject.toml,
 # but the tosa-tools 2026.5.0 it pins for the Arm backend (see
@@ -42,6 +46,47 @@ def venv_python(venv_dir: Path) -> Path:
     if os.name == "nt":
         return venv_dir / "Scripts" / "python.exe"
     return venv_dir / "bin" / "python"
+
+
+def uv_environment() -> dict[str, str]:
+    """Restore the caller's environment when launched by an isolated uv wrapper."""
+    env = dict(os.environ)
+    bootstrap = env.pop("CMSIS_EXECUTORCH_SETUP_UV_BOOTSTRAP", None)
+    original_venv = env.pop("CMSIS_EXECUTORCH_SETUP_VIRTUAL_ENV", "")
+    if bootstrap:
+        env.pop("VIRTUAL_ENV", None)
+        if original_venv:
+            env["VIRTUAL_ENV"] = original_venv
+        # uv run also prepends its temporary interpreter to PATH.
+        scripts = venv_python(Path(sys.prefix)).parent.resolve()
+        env["PATH"] = os.pathsep.join(
+            entry for entry in env.get("PATH", "").split(os.pathsep)
+            if Path(entry).resolve() != scripts
+        )
+    return env
+
+
+def find_uv_venv(uv: str, env: dict[str, str]) -> Path | None:
+    """Ask uv to select Python; return its virtual environment, if any.
+
+    Do not constrain the Python version during discovery: an existing but
+    incompatible environment must be reported instead of silently skipped.
+    --no-project follows the uv pip interface's environment selection rather
+    than filtering interpreters through a project's Python requirement.
+    """
+    result = subprocess.run(
+        [uv, "python", "find", "--no-project"],
+        capture_output=True, text=True, env=env,
+    )
+    if result.returncode:
+        # No discoverable Python is needed to proceed: uv venv can download
+        # the requested interpreter when creating the local environment.
+        return None
+    python = Path(result.stdout.strip())
+    directory = python.parent.parent
+    if (directory / "pyvenv.cfg").is_file():
+        return directory
+    return None
 
 
 def check_host_python() -> None:
@@ -108,7 +153,7 @@ def check_venv_python(python: Path, requested: tuple[int, ...] | None) -> None:
     if requested and version[: len(requested)] != requested:
         want = ".".join(map(str, requested))
         sys.exit(
-            f"error: .venv uses Python {have}, but --python {want} was requested. "
+            f"error: {python} uses Python {have}, but --python {want} was requested. "
             "Re-run with --recreate to change the environment's Python version."
         )
 
@@ -133,7 +178,7 @@ def smoke_test(python: Path) -> None:
         sys.exit(
             "error: the executorch Arm quantizer does not import; the torch and "
             "executorch versions in .venv are probably mismatched.\n"
-            "Recreate it with: python setup_venv.py --recreate"
+            f'Recreate it with: python "{HERE / "setup_venv.py"}" --recreate'
         )
 
 
@@ -142,21 +187,21 @@ def main() -> int:
     parser.add_argument(
         "--uv",
         action="store_true",
-        help="create the environment with `uv venv` and install with `uv pip` (needs uv on PATH)",
+        help="use uv environment discovery (including parents), create if absent, and install with uv pip",
     )
     parser.add_argument(
         "--python",
         metavar="VERSION",
         type=python_version,
         help=(
-            "Python version for uv, e.g. 3.12 or 3.12.10 (needs --uv; default: the "
-            "interpreter running this script, or uv's own pick through the wrappers)"
+            "Python version for uv, e.g. 3.12 or 3.12.10 (needs --uv; default: "
+            "reuse a supported environment or let uv choose Python >=3.10,<3.14)"
         ),
     )
     parser.add_argument(
         "--recreate",
         action="store_true",
-        help="delete and rebuild .venv even if it looks usable",
+        help="delete and rebuild the selected environment, including a parent environment with --uv",
     )
     args = parser.parse_args()
 
@@ -168,41 +213,43 @@ def main() -> int:
             "--uv requires uv on PATH; install it from "
             "https://docs.astral.sh/uv/getting-started/installation/"
         )
-    if not args.python:
+    env = uv_environment() if uv else dict(os.environ)
+    venv_dir = (find_uv_venv(uv, env) if uv else None) or Path.cwd() / ".venv"
+    if not uv:
         check_host_python()
 
-    if args.recreate and VENV_DIR.exists():
-        print(f"Removing {VENV_DIR}")
-        shutil.rmtree(VENV_DIR)
+    if args.recreate and venv_dir.exists():
+        print(f"Removing {venv_dir}")
+        shutil.rmtree(venv_dir)
 
-    if VENV_DIR.exists() and not venv_is_usable(VENV_DIR):
-        print(f"{VENV_DIR} exists but its interpreter does not run; recreating.")
-        shutil.rmtree(VENV_DIR)
+    if venv_dir.exists() and not venv_is_usable(venv_dir):
+        print(f"{venv_dir} exists but its interpreter does not run; recreating.")
+        shutil.rmtree(venv_dir)
 
-    if not VENV_DIR.exists():
-        print(f"Creating venv at {VENV_DIR}")
+    if not venv_dir.exists():
+        print(f"Creating venv at {venv_dir}")
         if uv:
             # The wrapper may run this script in uv's temporary isolated
             # environment: request a version, not a path inside that environment.
-            requested = ".".join(map(str, args.python or sys.version_info[:3]))
-            cmd = [uv, "venv", "--python", requested, str(VENV_DIR)]
+            requested = ".".join(map(str, args.python)) if args.python else ">=3.10,<3.14"
+            cmd = [uv, "venv", "--python", requested, str(venv_dir)]
             print(f"+ {' '.join(cmd)}", flush=True)
-            subprocess.run(cmd, check=True)
+            subprocess.run(cmd, check=True, env=env)
         else:
-            venv.EnvBuilder(with_pip=True, symlinks=os.name != "nt").create(VENV_DIR)
+            venv.EnvBuilder(with_pip=True, symlinks=os.name != "nt").create(venv_dir)
 
-    python = venv_python(VENV_DIR)
+    python = venv_python(venv_dir)
     check_venv_python(python, args.python)
     if not uv:
         pip(python, "install", "--upgrade", "pip")
 
     # Pass 1: everything that resolves from PyPI.
-    pip(python, "install", "-r", str(HERE / "requirements.txt"), uv=uv)
+    pip(python, "install", "-r", str(HERE / "requirements.txt"), uv=uv, env=env)
 
     # Pass 2: the TOSA serializer, without dependencies. See the header of
     # requirements-arm-tosa.txt for why --no-deps is load-bearing.
     # CMAKE_POLICY_VERSION_MINIMUM keeps an sdist fallback building under CMake 4.
-    env = dict(os.environ, CMAKE_POLICY_VERSION_MINIMUM="3.5")
+    env = dict(env, CMAKE_POLICY_VERSION_MINIMUM="3.5")
     pip(
         python,
         "install",
@@ -216,8 +263,8 @@ def main() -> int:
     smoke_test(python)
 
     print()
-    print(f"venv ready: {VENV_DIR}")
-    print("create_ai_layer.py runs itself with this interpreter:")
+    print(f"venv ready: {venv_dir}")
+    print("Model-export interpreter:")
     print(f"  {python}")
     return 0
 

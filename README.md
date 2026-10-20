@@ -143,9 +143,19 @@ On Windows:
 .\setup_venv.bat
 ```
 
-The setup script creates `.venv/` and installs the packages required to
-quantize and export the ML model. It is safe to run again; use `--recreate` when
-you want a completely new environment. The wrappers use `python3` (`python` on
+Without `--uv`, setup creates or checks `.venv/` in the **current working directory**
+and installs the packages required to quantize and export the ML model. With
+`--uv`, setup asks uv to discover an existing environment, including an active
+environment or `.venv` in a parent directory. If none is found, it creates
+`.venv/` in the current working directory. This lets several Zephyr applications
+share a parent environment using
+[uv's environment discovery](https://docs.astral.sh/uv/pip/environments/#discovery-of-python-environments).
+
+The requirements files are always read from the CMSIS-Executorch directory
+containing `setup_venv.py`. Call it by path from the application directory, for
+example `python C:/path/to/CMSIS-Executorch/setup_venv.py --uv`.
+It is safe to run again; `--recreate` rebuilds the selected environment,
+including a shared parent environment in uv mode. The wrappers use `python3` (`python` on
 Windows); point them at another interpreter with `PYTHON=python3.12 ./setup_venv.sh`.
 
 With [Astral's uv](https://docs.astral.sh/uv/getting-started/installation/) on `PATH`,
@@ -175,8 +185,9 @@ python3 create_ai_layer.py cmsis-executorch.cbuild-mlops.yml
 This is the MLOps step. The script reads the NPU and Vela settings from the
 file, quantizes and exports `model/model.py` for that NPU, and writes the
 complete AI layer into `ai_layer/`: the component selection and the ML model as a
-C array. It runs itself in `.venv` when started with another interpreter (use
-`python` on Windows).
+C array. When started with another interpreter, the standalone script selects
+the working directory's `.venv`, falling back to uv's discovered environment
+if no local `.venv` exists (use `python` on Windows).
 
 #### 3. Build the application
 

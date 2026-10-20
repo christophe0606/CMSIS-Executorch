@@ -25,7 +25,8 @@ CMSIS-Toolbox passes through to this script:
     model_pte.c / .h      the ExecuTorch program as a C array
     model.pte             the program itself, for inspection
 
-The standalone CLI runs itself in this project's .venv (see setup_venv.py).
+The standalone CLI uses the working directory's .venv, or uv's discovered
+environment when no local .venv exists (see setup_venv.py).
 Python callers can instead import create_ai_layer(mlops_file); importing this
 module does not export a model, load ML dependencies, or switch interpreters.
 Library callers supply the required dependencies in their own environment.
@@ -38,19 +39,21 @@ from __future__ import annotations
 import importlib.util
 import os
 import re
+import shutil
 import shlex
 import subprocess
 import sys
 from pathlib import Path
 
 from ai_layer_backends import ExportedModel, cmsis, zephyr
+from setup_venv import find_uv_venv, uv_environment, venv_python
 
 HERE = Path(__file__).resolve().parent
 SYMBOL = "model_pte"
 
 
 def run_in_venv() -> None:
-    """Re-run under the project's .venv unless this interpreter already is it.
+    """Re-run under the local .venv, falling back to uv's discovered environment.
 
     Deciding by "does torch import" is not enough: a torch installed for the
     host interpreter would keep the export outside the environment with the
@@ -58,14 +61,16 @@ def run_in_venv() -> None:
     (comparing interpreter paths does not work: venv symlinks resolve to the
     base interpreter).
     """
-    venv = HERE / ".venv"
+    venv = Path.cwd() / ".venv"
+    if not venv.exists() and (uv := shutil.which("uv")):
+        venv = find_uv_venv(uv, uv_environment()) or venv
     if Path(sys.prefix).resolve() == venv.resolve():
         return
-    python = venv / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
+    python = venv_python(venv)
     if not python.is_file():
         sys.exit(
             f"{venv} does not exist.\n"
-            "Create it first: ./setup_venv.sh (Linux/macOS) or setup_venv.bat (Windows)"
+            f'Create it first: python "{HERE / "setup_venv.py"}"'
         )
     print(f"[ai_layer] running in {python}", flush=True)
     sys.exit(subprocess.run([str(python), __file__, *sys.argv[1:]]).returncode)
@@ -214,7 +219,7 @@ def create_ai_layer(mlops_file: str | Path, *, backend: str = "cmsis") -> Path:
 
     Relative paths are resolved from the caller's working directory. This
     function uses the current Python environment and raises exceptions on
-    failure; only the standalone CLI switches to the project's .venv.
+    failure; only the standalone CLI selects a local or uv-discovered environment.
     Both backends use the same MLOps input and model export. Zephyr writes
     ai_layer/ next to the input, independently of CMSIS's model.clayer field.
     """

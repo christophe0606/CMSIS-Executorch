@@ -28,6 +28,9 @@ if "$use_uv"; then
         exit 2
     fi
     # Isolation lets --recreate remove .venv without removing the running launcher.
+    # Preserve the caller's active environment for dependency installation.
+    export CMSIS_EXECUTORCH_SETUP_UV_BOOTSTRAP=1
+    export CMSIS_EXECUTORCH_SETUP_VIRTUAL_ENV="${VIRTUAL_ENV:-}"
     exec uv run --no-project --isolated --python "$uv_python" "${HERE}/setup_venv.py" "$@"
 fi
 exec "${PYTHON:-python3}" "${HERE}/setup_venv.py" "$@"

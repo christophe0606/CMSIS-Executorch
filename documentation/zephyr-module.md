@@ -151,7 +151,13 @@ The function returns the generated `.clayer.yml` or `CMakeLists.txt` path and ra
 failure. Library calls and `west ailayer` use the caller's Python environment,
 which must contain the export dependencies in `requirements.txt`. Only the
 standalone `python create_ai_layer.py ...` CLI automatically relaunches itself
-in this repository's `.venv`.
+in the current working directory's `.venv`, falling back to uv discovery when
+no local `.venv` exists. To create or update dependencies, run
+`python /path/to/CMSIS-Executorch/setup_venv.py --uv` from the application directory.
+uv discovers an existing active or parent environment; if none exists, setup
+creates `.venv` in the current directory. Omitting `--uv` uses only the current
+directory's `.venv`. Requirements are read from CMSIS-Executorch regardless of
+the working directory.
 
 ## Select the application's operators
 
