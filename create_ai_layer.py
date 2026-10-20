@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Copyright 2026 Arm Limited and/or its affiliates.
 # SPDX-License-Identifier: Apache-2.0
-"""Create the AI layer of the CMSIS solution from its MLOps information.
+"""Export a model from CMSIS MLOps information and generate an AI layer.
 
     python create_ai_layer.py <solution>.cbuild-mlops.yml
 
@@ -25,12 +25,17 @@ CMSIS-Toolbox passes through to this script:
     model_pte.c / .h      the ExecuTorch program as a C array
     model.pte             the program itself, for inspection
 
-The script runs itself in the solution's .venv (see setup_venv.py) when it is
-started with an interpreter that has no torch.
+The standalone CLI runs itself in this project's .venv (see setup_venv.py).
+Python callers can instead import create_ai_layer(mlops_file); importing this
+module does not export a model, load ML dependencies, or switch interpreters.
+Library callers supply the required dependencies in their own environment.
+The default CMSIS backend writes a .clayer.yml; backend="zephyr" writes
+ai_layer/CMakeLists.txt, components.conf and operators.conf beside the input.
 """
 
 from __future__ import annotations
 
+import importlib.util
 import os
 import re
 import shlex
@@ -38,8 +43,9 @@ import subprocess
 import sys
 from pathlib import Path
 
+from ai_layer_backends import ExportedModel, cmsis, zephyr
+
 HERE = Path(__file__).resolve().parent
-PACK = "PyTorch::ExecuTorch"
 SYMBOL = "model_pte"
 
 
@@ -65,45 +71,6 @@ def run_in_venv() -> None:
     sys.exit(subprocess.run([str(python), __file__, *sys.argv[1:]]).returncode)
 
 
-def pack_root() -> Path:
-    """The CMSIS pack root: $CMSIS_PACK_ROOT, else cpackget's default."""
-    if env := os.environ.get("CMSIS_PACK_ROOT"):
-        return Path(env)
-    if os.name == "nt":
-        return Path(os.environ.get("LOCALAPPDATA", Path.home() / "AppData/Local")) / "Arm/Packs"
-    return Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache")) / "arm/packs"
-
-
-def executorch_version(mlops_file: Path) -> str:
-    """The ExecuTorch pack version cbuild setup resolved, from <solution>.cbuild-pack.yml.
-
-    The file is a lock file that keeps earlier resolutions, so an unversioned
-    selector can still point at an older pack; the entry selected by the
-    csolution's exact pin (PyTorch::ExecuTorch@<version>) is the one in use.
-    """
-    import yaml
-
-    pack_file = mlops_file.with_name(mlops_file.name.replace(".cbuild-mlops.yml", ".cbuild-pack.yml"))
-    fallback = None
-    for entry in yaml.safe_load(pack_file.read_text())["cbuild-pack"]["resolved-packs"]:
-        name, _, version = entry["resolved-pack"].partition("@")
-        selectors = entry.get("selected-by-pack", [])
-        if name != PACK or not selectors:
-            continue
-        if f"{PACK}@{version}" in selectors:
-            return version
-        fallback = fallback or version
-    if fallback:
-        return fallback
-    sys.exit(f"{pack_file}: {PACK} is not among the resolved packs")
-
-
-def executorch_pack(version: str) -> Path:
-    """Directory of the installed ExecuTorch pack of that version."""
-    vendor, _, pack = PACK.partition("::")
-    return pack_root() / vendor / pack / version
-
-
 # Vela options that are arguments of EthosUCompileSpec, and the ones the export
 # sets itself: the configuration file comes from vela.ini of the cbuild-mlops.yml.
 SPEC_OPTIONS = ("accelerator-config", "system-config", "memory-mode")
@@ -122,18 +89,18 @@ def vela_options(options: str) -> tuple[dict[str, str], list[str]]:
     while tokens:
         token = tokens.pop(0)
         if not token.startswith("--"):
-            sys.exit(f"vela options: unexpected '{token}' in '{options}'")
+            raise ValueError(f"vela options: unexpected '{token}' in '{options}'")
         name, has_value, value = token[2:].partition("=")
         if not has_value and tokens and not tokens[0].startswith("-"):
             value = tokens.pop(0)
         if name in EXPORT_OPTIONS:
-            sys.exit(
+            raise ValueError(
                 f"vela options: --{name} is set by the export; "
                 "the configuration file is vela: ini: of the mlops: node"
             )
         if name in SPEC_OPTIONS:
             if name in spec:
-                sys.exit(f"vela options: --{name} is given twice in '{options}'")
+                raise ValueError(f"vela options: --{name} is given twice in '{options}'")
             spec[name] = value
         else:
             extra.append(f"--{name}={value}" if value else f"--{name}")
@@ -142,11 +109,11 @@ def vela_options(options: str) -> tuple[dict[str, str], list[str]]:
 
 def compile_spec(mlops: dict, mlops_dir: Path):
     """EthosUCompileSpec from the npu: and vela: nodes of the cbuild-mlops.yml."""
-    from executorch.backends.arm.ethosu import EthosUCompileSpec
-
     npu = mlops.get("npu")
     if not npu:
-        sys.exit("the solution's mlops: node names no NPU; this template needs an Ethos-U")
+        raise ValueError("the solution's mlops: node names no NPU; this template needs an Ethos-U")
+
+    from executorch.backends.arm.ethosu import EthosUCompileSpec
     vela = mlops.get("vela", {})
     spec, extra = vela_options(vela.get("options", ""))
 
@@ -169,7 +136,7 @@ def compile_spec(mlops: dict, mlops_dir: Path):
 def model_params(mlops: dict) -> dict:
     """The extra keys of the model: node, as keyword arguments for model/model.py."""
     params = {}
-    for key, value in mlops["model"].items():
+    for key, value in mlops.get("model", {}).items():
         if key == "input-shape":
             params["input_shape"] = tuple(int(d) for d in re.split(r"[x,]", str(value)))
         elif key == "calibration-samples":
@@ -181,19 +148,22 @@ def model_params(mlops: dict) -> dict:
     return params
 
 
-def export_model(spec, params: dict) -> bytes:
-    """Quantize model/model.py, delegate it to the Ethos-U and return the .pte."""
+def export_model(spec, params: dict, model_file: Path) -> ExportedModel:
+    """Quantize the model, delegate it to Ethos-U, and collect its CPU operators."""
     import torch
     from executorch.backends.arm.ethosu import EthosUPartitioner
     from executorch.backends.arm.quantizer import EthosUQuantizer, get_symmetric_quantization_config
     from executorch.exir import EdgeCompileConfig, ExecutorchBackendConfig, to_edge_transform_and_lower
     from torchao.quantization.pt2e.quantize_pt2e import convert_pt2e, prepare_pt2e
 
-    sys.path.insert(0, str(HERE / "model"))
-    from model import get_calibration_inputs, get_model
-
-    model = get_model(**{k: v for k, v in params.items() if k == "input_shape"})
-    samples = get_calibration_inputs(**params)
+    module_name = "_ai_layer_model"
+    module_spec = importlib.util.spec_from_file_location(module_name, model_file)
+    model_module = importlib.util.module_from_spec(module_spec)
+    # Register the module for Python decorators and Torch's source inspection.
+    sys.modules[module_name] = model_module
+    module_spec.loader.exec_module(model_module)
+    model = model_module.get_model(**{k: v for k, v in params.items() if k == "input_shape"})
+    samples = model_module.get_calibration_inputs(**params)
     example = (samples[0],)
     graph = torch.export.export(model, example).module()
 
@@ -213,35 +183,7 @@ def export_model(spec, params: dict) -> bytes:
         compile_config=EdgeCompileConfig(_check_ir_validity=False),
     )
     program = edge.to_executorch(ExecutorchBackendConfig(extract_delegate_segments=False))
-    return bytes(program.buffer)
-
-
-def components(pte: bytes, pack: Path) -> tuple[list[str], list[str]]:
-    """Runtime, kernel utils and registration, backend, plus one operator component per operator the .pte uses.
-
-    The pack's "Extension Tensor" is not selected: its tensor_ptr_maker.cpp
-    needs std::random_device, which the LLVM embedded toolchain lacks; the
-    runner wraps its input in a TensorImpl instead.
-    """
-    pdsc = next(pack.glob("*.pdsc"))
-    available = set(re.findall(r'Csub="([^"]+)"', pdsc.read_text()))
-    family = {"aten": "Portable", "quantized_decomposed": "Quantized", "cortex_m": "Cortex-M"}
-
-    selected, unknown = set(), []
-    for ns, op in sorted(set(re.findall(rb"(aten|quantized_decomposed|cortex_m)::(\w+)", pte))):
-        ns, op = ns.decode(), op.decode()
-        candidates = [
-            f"{family[ns]} {op}",
-            f"{family[ns]} {re.sub(r'_(per_tensor|per_channel|byte|copy)$', '', op)}",
-        ]
-        if match := next((c for c in candidates if c in available), None):
-            selected.add(match)
-        else:
-            unknown.append(f"{ns}::{op}")
-    if unknown:
-        print(f"[ai_layer] warning: no component in {pack.name} for {unknown}", file=sys.stderr)
-
-    return ["Runtime", "Kernel Utils", "Kernel Registration", "Backend EthosU"], sorted(selected)
+    return ExportedModel.from_program(program)
 
 
 def c_array(pte: bytes) -> str:
@@ -267,62 +209,69 @@ extern const unsigned long {SYMBOL}_size;
 """
 
 
-def clayer(mlops: dict, runtime: list[str], operators: list[str], mlops_file: Path, version: str) -> str:
-    lines = [
-        f"# Generated by create_ai_layer.py from {mlops_file.name} -- do not edit.",
-        f"# Re-run `python create_ai_layer.py {mlops_file.name}` after changing",
-        "# model/model.py or the csolution's mlops: node.",
-        "layer:",
-        "  type: AI",
-        f"  description: {mlops.get('description', mlops['model'].get('name', 'AI layer'))}",
-        "",
-        "  packs:",
-        f"    - pack: {PACK}@{version}",
-        "",
-        "  define:",
-        "    - ET_LOG_ENABLED: 0",
-        "",
-        "  add-path:",
-        "    - .",
-        "",
-        "  components:",
-        *[f"    - component: Machine Learning:ExecuTorch:{c}" for c in runtime],
-        *[f"    - component: Machine Learning:ExecuTorch Operators:{c}" for c in operators],
-        "",
-        "  groups:",
-        f"    - group: {mlops['model'].get('name', 'Model')}",
-        "      files:",
-        f"        - file: ./{SYMBOL}.c",
-        f"        - file: ./{SYMBOL}.h",
-        "",
-    ]
-    return "\n".join(lines)
+def create_ai_layer(mlops_file: str | Path, *, backend: str = "cmsis") -> Path:
+    """Export the model and write a CMSIS or Zephyr layer; return its entry point.
+
+    Relative paths are resolved from the caller's working directory. This
+    function uses the current Python environment and raises exceptions on
+    failure; only the standalone CLI switches to the project's .venv.
+    Both backends use the same MLOps input and model export. Zephyr writes
+    ai_layer/ next to the input, independently of CMSIS's model.clayer field.
+    """
+    generators = {"cmsis": cmsis, "zephyr": zephyr}
+    if backend not in generators:
+        raise ValueError(f"unknown AI-layer backend: {backend}")
+    mlops_file = Path(mlops_file).resolve()
+    if not mlops_file.name.endswith(".cbuild-mlops.yml"):
+        raise ValueError("expected a <solution>.cbuild-mlops.yml file")
+
+    import yaml
+
+    try:
+        data = yaml.safe_load(mlops_file.read_text())
+    except yaml.YAMLError as error:
+        raise ValueError(f"{mlops_file}: invalid YAML: {error}") from error
+    if not isinstance(data, dict) or not isinstance(data.get("cbuild-mlops"), dict):
+        raise ValueError(f"{mlops_file}: expected a cbuild-mlops mapping")
+    mlops = data["cbuild-mlops"]
+    if not isinstance(mlops.setdefault("model", {}), dict):
+        raise ValueError(f"{mlops_file}: model must be a mapping")
+
+    model_file = mlops_file.parent / "model/model.py"
+    if not model_file.is_file():
+        model_file = HERE / "model/model.py"
+    spec = compile_spec(mlops, mlops_file.parent)
+    params = model_params(mlops)
+    # Preserve imports of helper modules next to model.py for the whole export,
+    # then restore the library caller's search path even when export fails.
+    sys.path.insert(0, str(model_file.parent))
+    try:
+        model = export_model(spec, params, model_file)
+    finally:
+        sys.path.pop(0)
+    layer_file, metadata = generators[backend].render(mlops_file, mlops, model)
+    layer_dir = layer_file.parent
+
+    layer_dir.mkdir(parents=True, exist_ok=True)
+    (layer_dir / "model.pte").write_bytes(model.pte)
+    (layer_dir / f"{SYMBOL}.c").write_text(c_array(model.pte), encoding="utf-8", newline="\n")
+    (layer_dir / f"{SYMBOL}.h").write_text(HEADER, encoding="utf-8", newline="\n")
+    for name, contents in metadata.items():
+        (layer_dir / name).write_text(contents, encoding="utf-8", newline="\n")
+
+    print(f"[ai_layer] {len(model.pte)} byte program, operators: {list(model.operators)}")
+    print(f"[ai_layer] wrote {layer_file}")
+    return layer_file
 
 
 def main() -> None:
     if len(sys.argv) != 2 or not sys.argv[1].endswith(".cbuild-mlops.yml"):
         sys.exit(f"usage: {Path(__file__).name} <solution>.cbuild-mlops.yml")
     run_in_venv()
-
-    import yaml
-
-    mlops_file = Path(sys.argv[1]).resolve()
-    mlops = yaml.safe_load(mlops_file.read_text())["cbuild-mlops"]
-    layer_file = mlops_file.parent / mlops["model"]["clayer"]
-    layer_dir = layer_file.parent
-
-    pte = export_model(compile_spec(mlops, mlops_file.parent), model_params(mlops))
-    version = executorch_version(mlops_file)
-    runtime, operators = components(pte, executorch_pack(version))
-
-    layer_dir.mkdir(parents=True, exist_ok=True)
-    (layer_dir / "model.pte").write_bytes(pte)
-    (layer_dir / f"{SYMBOL}.c").write_text(c_array(pte), newline="\n")
-    (layer_dir / f"{SYMBOL}.h").write_text(HEADER, newline="\n")
-    layer_file.write_text(clayer(mlops, runtime, operators, mlops_file, version), newline="\n")
-
-    print(f"[ai_layer] {len(pte)} byte program, operators: {operators}")
-    print(f"[ai_layer] wrote {layer_file}")
+    try:
+        create_ai_layer(sys.argv[1])
+    except (OSError, ValueError) as error:
+        sys.exit(str(error))
 
 
 if __name__ == "__main__":

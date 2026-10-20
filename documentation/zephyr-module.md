@@ -54,6 +54,105 @@ because upstream headers use the `<executorch/...>` include prefix.
 These application CMake settings also apply when csolution invokes west.
 There is no additional generator executable to discover on `PATH`.
 
+## West AI-layer command
+
+This repository provides a `west ailayer` extension in
+[`zephyr/ailayer.py`](../zephyr/ailayer.py). Register it by adding
+`west-commands` to this project's existing entry in your workspace's `west.yml`:
+
+```yaml
+manifest:
+  projects:
+    - name: cmsis-executorch
+      # Keep the project's existing URL, revision and path settings.
+      west-commands: zephyr/west-commands.yml
+```
+
+If this repository is itself the manifest repository, put the same
+`west-commands` field under `manifest.self` instead. This is
+[west extension registration](https://docs.zephyrproject.org/latest/develop/west/extensions.html),
+separate from `zephyr/module.yml`; `EXTRA_ZEPHYR_MODULES` alone does not register
+west commands.
+
+From the application directory, run:
+
+```shell
+west ailayer
+```
+
+The command uses the only `*.cbuild-mlops.yml` in the current working directory.
+If none or several exist, it reports the problem and asks for an explicit path:
+
+```shell
+west ailayer path/to/solution.cbuild-mlops.yml
+```
+
+The output is always `ai_layer/` beside the input file. For example, an input
+in `applications/my_app/` produces:
+
+```text
+applications/my_app/ai_layer/
+  CMakeLists.txt
+  model.pte
+  model_pte.c
+  model_pte.h
+  components.conf
+  operators.conf
+```
+
+Add the generated directory before `find_package(Zephyr)` in the application's
+`CMakeLists.txt`:
+
+```cmake
+cmake_minimum_required(VERSION 3.20.0)
+add_subdirectory(ai_layer)
+find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
+project(my_app)
+target_sources(app PRIVATE src/main.cpp)
+```
+
+The generated CMake file appends both fragments to `EXTRA_CONF_FILE` before
+Kconfig runs, then links the model source and include directory into `app`
+after Zephyr creates that target. Existing extra fragments are preserved.
+Keep C++17 or newer and the board's Ethos-U driver/devicetree configuration in
+the application. The generated component fragment enables the CMSIS-ExecuTorch
+runtime, utilities, registration, Ethos-U backend, and disables ExecuTorch
+logging to match the CMSIS output. It also enables CMSIS-NN when a selected
+Cortex-M operator requires it.
+
+The wrapper imports `create_ai_layer()` from
+[`create_ai_layer.py`](../create_ai_layer.py) and selects the Zephyr backend.
+The two output backends live in [`ai_layer_backends/`](../ai_layer_backends/).
+Both consume the same `cbuild-mlops` input, NPU/Vela settings, model parameters,
+and shared export result. CMSIS uses `model.clayer` (default:
+`ai_layer/ai_layer.clayer.yml`); Zephyr writes `ai_layer/` beside the input and
+ignores that CMSIS-specific output path. Model parameters are optional; the
+model's defaults are used when no `model:` node is present. The exporter loads
+`model/model.py` beside the input when available, otherwise the repository's
+starter model. It must provide `get_model()` and `get_calibration_inputs()`.
+
+Zephyr generation selects exact CPU operator overloads from all exported
+methods using this module's registration catalog. Unsupported operators cause
+an error before output files are replaced. Zephyr generation needs no installed
+CMSIS pack or `.cbuild-pack.yml`; CMSIS generation still uses both. Generation
+is an explicit command and is not invoked during firmware builds.
+
+Library callers can use the same function:
+
+```python
+from create_ai_layer import create_ai_layer
+
+cmsis_layer = create_ai_layer("path/to/solution.cbuild-mlops.yml")
+zephyr_cmake = create_ai_layer("path/to/solution.cbuild-mlops.yml", backend="zephyr")
+```
+
+Importing the module performs no generation and does not load the ML packages.
+The function returns the generated `.clayer.yml` or `CMakeLists.txt` path and raises exceptions on
+failure. Library calls and `west ailayer` use the caller's Python environment,
+which must contain the export dependencies in `requirements.txt`. Only the
+standalone `python create_ai_layer.py ...` CLI automatically relaunches itself
+in this repository's `.venv`.
+
 ## Select the application's operators
 
 In `prj.conf`, enable C++ and this module:
@@ -133,26 +232,27 @@ implementations and their utilities still compile. Kernel Utils can also be
 enabled explicitly for application-defined kernels. The EmbeddedModule facade
 selects Runtime as well.
 
-## Contract for a future PTE analyser
+## Generated operator configuration
 
-The analyser runs **before Zephyr configuration** and emits a plain Kconfig
-fragment in the format shown above. The application merges it using
+`west ailayer` runs **before Zephyr configuration** and emits a plain Kconfig
+fragment in the format shown above. The generated CMake file merges it using
 `EXTRA_CONF_FILE`, alongside `prj.conf`. Zephyr owns the merged configuration
 and applies the same operator settings to both CMake source selection and the
 pre-generated registration header. There is no second operator list to keep
 in sync.
 
-The analyser must map each required operator to its source family, account
-for all methods/models used by the application, and report unsupported
-operators. The upstream YAML defines operator schemas and implementation
-names; `zephyr/operators.cmake` maps the selectable family names to sources.
+The generator maps each required operator to its registered component and
+accounts for all methods in the exported program. The upstream YAML defines
+operator schemas and implementation names; `zephyr/operators.cmake` maps the
+selectable family names to sources.
 Delegated operations require their backend separately; selecting CPU kernels
 does not enable an accelerator backend.
 
-When a model changes, regenerate `operators.conf` and reconfigure the
-application. Remove stale selections from that fragment. Keep manually added
-operators in a separate fragment if they must survive model regeneration.
-The analyser itself is outside the scope of this integration.
+When a model changes, run `west ailayer` again and reconfigure the application.
+The generated fragments are replaced so stale operator selections disappear.
+Keep manually added operators in a separate fragment if they must survive
+model regeneration. A standalone analyser for pre-existing PTE files is not
+provided.
 
 ## EmbeddedModule and runtime settings
 
@@ -280,6 +380,14 @@ The schema and registration headers use ExecuTorch's BSD-3-Clause license;
 see [`src/LICENSE-ExecuTorch`](../src/LICENSE-ExecuTorch).
 
 ## Configuration checks
+
+Run the AI-layer backend and west discovery tests using the Zephyr Python
+environment (PyYAML and west required). They use fixture exports and do not
+load ML packages or run model export:
+
+```powershell
+python tests/zephyr/test_ai_layer.py
+```
 
 Run the updater tests with any Python 3.10+ environment:
 
