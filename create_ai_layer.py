@@ -32,6 +32,7 @@ started with an interpreter that has no torch.
 from __future__ import annotations
 
 import os
+import inspect
 import re
 import shlex
 import subprocess
@@ -194,10 +195,20 @@ def export_models(spec, params: dict):
     import model as model_module
     from description import Model, Pte
 
-    source = model_module.get_model(**{k: v for k, v in params.items() if k == "input_shape"})
+    shape_arg = inspect.signature(model_module.get_model).parameters.get("input_shape")
+    shape_required = shape_arg is not None and shape_arg.default is inspect.Parameter.empty
+    source = (
+        model_module.get_model(input_shape=params["input_shape"])
+        if shape_required and "input_shape" in params
+        else model_module.get_model()
+    )
     if isinstance(source, nn.Module):
+        if "input_shape" in params and not shape_required:
+            source = model_module.get_model(input_shape=params["input_shape"])
         source = [Pte(name="model", models=[Model(name="forward", model=source,
-            calibration_inputs=model_module.get_calibration_inputs)])]
+            calibration_inputs=model_module.get_calibration_inputs,
+            input_shape=params.get("input_shape", (1, 16, 16, 3)),
+            calibration_samples=params.get("calibration_samples", 2))])]
     elif isinstance(source, Model):
         source = [Pte(name="model", models=[source])]
     elif isinstance(source, Pte):
@@ -211,8 +222,6 @@ def export_models(spec, params: dict):
         raise TypeError("get_model() must return an nn.Module, Model, Pte, or a nonempty list of Model or Pte")
 
     results = []
-    shape = params.get("input_shape", (1, 16, 16, 3))
-    count = params.get("calibration_samples", 2)
     for pte in source:
         if not isinstance(pte, Pte) or not pte.models:
             raise ValueError("each Pte must contain at least one Model")
@@ -222,14 +231,33 @@ def export_models(spec, params: dict):
                 raise TypeError("each Pte.models entry must be a Model with an nn.Module")
             if item.name in programs:
                 raise ValueError(f"duplicate model method name: {item.name}")
-            samples = item.calibration_inputs(shape, count) if item.calibration_inputs else []
-            if item.calibration_inputs is not None and not samples:
-                raise ValueError(f"{item.name}: calibration_inputs returned no samples")
-            example = (samples[0] if samples else torch.zeros(shape),)
+            use_default_quantization = (
+                item.calibration_inputs is not None and item.custom_quantization is None
+            )
+            samples = []
+            if use_default_quantization:
+                if item.input_shape is None or item.calibration_samples is None:
+                    raise ValueError(
+                        f"{item.name}: input_shape and calibration_samples are required "
+                        "for default quantization"
+                    )
+                samples = item.calibration_inputs(item.input_shape, item.calibration_samples)
+                if not samples:
+                    raise ValueError(f"{item.name}: calibration_inputs returned no samples")
+            if item.example_inputs is not None:
+                example = item.example_inputs
+            elif samples:
+                example = (samples[0],)
+            elif item.input_shape is not None:
+                example = (torch.zeros(item.input_shape),)
+            else:
+                raise ValueError(
+                    f"{item.name}: example_inputs or input_shape is required to export the model"
+                )
             graph = torch.export.export(item.model, example).module()
             if item.custom_quantization is not None:
                 quantized = item.custom_quantization(spec, graph)
-            elif item.calibration_inputs is not None:
+            elif use_default_quantization:
                 quantizer = EthosUQuantizer(spec)
                 quantizer.set_global(get_symmetric_quantization_config(is_per_channel=True))
                 prepared = prepare_pt2e(graph, quantizer)

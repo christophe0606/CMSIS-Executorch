@@ -35,6 +35,13 @@ class Model:
     # For instance may use : get_symmetric_a16w8_quantization_config
     custom_quantization: Callable[[EthosUCompileSpec, GraphModule], GraphModule] | None = None
     model: nn.Module | None = None
+    # Parameters for this model's default calibration. They are unused when
+    # calibration_inputs is None or custom_quantization is set.
+    input_shape: tuple[int, ...] | None = None
+    calibration_samples: int | None = None
+    # Required for an already quantized or custom quantized model when
+    # input_shape is None; torch.export still needs example inputs.
+    example_inputs: tuple[torch.Tensor, ...] | None = None
 
 # Description of metadata for a particular model or experiment
 @dataclass
