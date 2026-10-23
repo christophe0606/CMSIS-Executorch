@@ -181,39 +181,75 @@ def model_params(mlops: dict) -> dict:
     return params
 
 
-def export_model(spec, params: dict) -> bytes:
-    """Quantize model/model.py, delegate it to the Ethos-U and return the .pte."""
+def export_models(spec, params: dict):
+    """Export every PTE described by model/model.py."""
     import torch
+    from torch import nn
     from executorch.backends.arm.ethosu import EthosUPartitioner
     from executorch.backends.arm.quantizer import EthosUQuantizer, get_symmetric_quantization_config
     from executorch.exir import EdgeCompileConfig, ExecutorchBackendConfig, to_edge_transform_and_lower
     from torchao.quantization.pt2e.quantize_pt2e import convert_pt2e, prepare_pt2e
 
     sys.path.insert(0, str(HERE / "model"))
-    from model import get_calibration_inputs, get_model
+    import model as model_module
+    from description import Model, Pte
 
-    model = get_model(**{k: v for k, v in params.items() if k == "input_shape"})
-    samples = get_calibration_inputs(**params)
-    example = (samples[0],)
-    graph = torch.export.export(model, example).module()
+    source = model_module.get_model(**{k: v for k, v in params.items() if k == "input_shape"})
+    if isinstance(source, nn.Module):
+        source = [Pte(name="model", models=[Model(name="forward", model=source,
+            calibration_inputs=model_module.get_calibration_inputs)])]
+    elif isinstance(source, Model):
+        source = [Pte(name="model", models=[source])]
+    elif isinstance(source, Pte):
+        source = [source]
+    elif isinstance(source, list) and source:
+        if all(isinstance(item, Model) for item in source):
+            source = [Pte(name="model", models=source)]
+        elif not all(isinstance(item, Pte) for item in source):
+            raise TypeError("get_model() must return a homogeneous list of Model or Pte objects")
+    else:
+        raise TypeError("get_model() must return an nn.Module, Model, Pte, or a nonempty list of Model or Pte")
 
-    # Quantize the whole graph so the partitioner can move every node into the
-    # Ethos-U delegate; only a float<->int8 boundary stays on the CPU.
-    quantizer = EthosUQuantizer(spec)
-    quantizer.set_global(get_symmetric_quantization_config(is_per_channel=True))
-    prepared = prepare_pt2e(graph, quantizer)
-    with torch.no_grad():
-        for sample in samples:
-            prepared(sample)  # calibrate
-    quantized = convert_pt2e(prepared)
+    results = []
+    shape = params.get("input_shape", (1, 16, 16, 3))
+    count = params.get("calibration_samples", 2)
+    for pte in source:
+        if not isinstance(pte, Pte) or not pte.models:
+            raise ValueError("each Pte must contain at least one Model")
+        programs = {}
+        for item in pte.models:
+            if not isinstance(item, Model) or item.model is None:
+                raise TypeError("each Pte.models entry must be a Model with an nn.Module")
+            if item.name in programs:
+                raise ValueError(f"duplicate model method name: {item.name}")
+            samples = item.calibration_inputs(shape, count) if item.calibration_inputs else []
+            if item.calibration_inputs is not None and not samples:
+                raise ValueError(f"{item.name}: calibration_inputs returned no samples")
+            example = (samples[0] if samples else torch.zeros(shape),)
+            graph = torch.export.export(item.model, example).module()
+            if item.custom_quantization is not None:
+                quantized = item.custom_quantization(spec, graph)
+            elif item.calibration_inputs is not None:
+                quantizer = EthosUQuantizer(spec)
+                quantizer.set_global(get_symmetric_quantization_config(is_per_channel=True))
+                prepared = prepare_pt2e(graph, quantizer)
+                with torch.no_grad():
+                    for sample in samples:
+                        prepared(sample)
+                quantized = convert_pt2e(prepared)
+            else:
+                quantized = graph
+            programs[item.name] = torch.export.export(quantized, example)
 
-    edge = to_edge_transform_and_lower(
-        torch.export.export(quantized, example),
-        partitioner=[EthosUPartitioner(spec)],
-        compile_config=EdgeCompileConfig(_check_ir_validity=False),
-    )
-    program = edge.to_executorch(ExecutorchBackendConfig(extract_delegate_segments=False))
-    return bytes(program.buffer)
+        edge = to_edge_transform_and_lower(
+            programs,
+            partitioner=[EthosUPartitioner(spec)],
+            constant_methods=pte.metadata.details if pte.metadata else None,
+            compile_config=EdgeCompileConfig(_check_ir_validity=False),
+        )
+        program = edge.to_executorch(ExecutorchBackendConfig(extract_delegate_segments=False))
+        results.append((pte.name, bytes(program.buffer)))
+    return results
 
 
 def components(pte: bytes, pack: Path) -> tuple[list[str], list[str]]:
@@ -244,13 +280,13 @@ def components(pte: bytes, pack: Path) -> tuple[list[str], list[str]]:
     return ["Runtime", "Kernel Utils", "Kernel Registration", "Backend EthosU"], sorted(selected)
 
 
-def c_array(pte: bytes) -> str:
+def c_array(pte: bytes, symbol: str = SYMBOL) -> str:
     rows = [", ".join(f"0x{b:02x}" for b in pte[i : i + 16]) for i in range(0, len(pte), 16)]
     return (
         "// Generated by create_ai_layer.py -- do not edit.\n"
-        f"__attribute__((aligned(16))) const unsigned char {SYMBOL}[] = {{\n  "
+        f"__attribute__((aligned(16))) const unsigned char {symbol}[] = {{\n  "
         + ",\n  ".join(rows)
-        + f"\n}};\nconst unsigned long {SYMBOL}_size = sizeof({SYMBOL});\n"
+        + f"\n}};\nconst unsigned long {symbol}_size = sizeof({symbol});\n"
     )
 
 
@@ -267,7 +303,12 @@ extern const unsigned long {SYMBOL}_size;
 """
 
 
-def clayer(mlops: dict, runtime: list[str], operators: list[str], mlops_file: Path, version: str) -> str:
+def header(symbol: str) -> str:
+    return HEADER.replace(SYMBOL, symbol)
+
+
+def clayer(mlops: dict, runtime: list[str], operators: list[str], mlops_file: Path, version: str,
+           names: list[str]) -> str:
     lines = [
         f"# Generated by create_ai_layer.py from {mlops_file.name} -- do not edit.",
         f"# Re-run `python create_ai_layer.py {mlops_file.name}` after changing",
@@ -290,10 +331,16 @@ def clayer(mlops: dict, runtime: list[str], operators: list[str], mlops_file: Pa
         *[f"    - component: Machine Learning:ExecuTorch Operators:{c}" for c in operators],
         "",
         "  groups:",
-        f"    - group: {mlops['model'].get('name', 'Model')}",
-        "      files:",
-        f"        - file: ./{SYMBOL}.c",
-        f"        - file: ./{SYMBOL}.h",
+        *[
+            line
+            for name in names
+            for line in (
+                f"    - group: {mlops['model'].get('name', 'Model') if names == ['model'] else name}",
+                "      files:",
+                f"        - file: ./{name}_pte.c",
+                f"        - file: ./{name}_pte.h",
+            )
+        ],
         "",
     ]
     return "\n".join(lines)
@@ -311,17 +358,25 @@ def main() -> None:
     layer_file = mlops_file.parent / mlops["model"]["clayer"]
     layer_dir = layer_file.parent
 
-    pte = export_model(compile_spec(mlops, mlops_file.parent), model_params(mlops))
+    exports = export_models(compile_spec(mlops, mlops_file.parent), model_params(mlops))
+    names = [name for name, _ in exports]
+    if len(names) != len(set(names)) or any(not re.fullmatch(r"[A-Za-z_][A-Za-z_0-9]*", name) for name in names):
+        raise ValueError("Pte names must be unique C identifiers")
     version = executorch_version(mlops_file)
-    runtime, operators = components(pte, executorch_pack(version))
+    component_sets = [components(pte, executorch_pack(version)) for _, pte in exports]
+    runtime = sorted(set().union(*(set(item[0]) for item in component_sets)))
+    operators = sorted(set().union(*(set(item[1]) for item in component_sets)))
 
     layer_dir.mkdir(parents=True, exist_ok=True)
-    (layer_dir / "model.pte").write_bytes(pte)
-    (layer_dir / f"{SYMBOL}.c").write_text(c_array(pte), newline="\n")
-    (layer_dir / f"{SYMBOL}.h").write_text(HEADER, newline="\n")
-    layer_file.write_text(clayer(mlops, runtime, operators, mlops_file, version), newline="\n")
+    for name, pte in exports:
+        symbol = f"{name}_pte"
+        (layer_dir / f"{name}.pte").write_bytes(pte)
+        (layer_dir / f"{symbol}.c").write_text(c_array(pte, symbol), newline="\n")
+        (layer_dir / f"{symbol}.h").write_text(header(symbol), newline="\n")
+        print(f"[ai_layer] {name}: {len(pte)} byte program")
+    layer_file.write_text(clayer(mlops, runtime, operators, mlops_file, version, names), newline="\n")
 
-    print(f"[ai_layer] {len(pte)} byte program, operators: {operators}")
+    print(f"[ai_layer] operators: {operators}")
     print(f"[ai_layer] wrote {layer_file}")
 
 

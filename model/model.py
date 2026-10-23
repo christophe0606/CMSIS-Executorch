@@ -9,6 +9,7 @@ enough to exercise conv / relu / pool / linear through Vela. Input is a single
 
 import torch
 from torch import nn
+import description as de
 
 # NHWC, the layout of a camera frame, which the Ethos-U reads as it is. An NCHW
 # input costs one more NPU operation that reorders it before the first
